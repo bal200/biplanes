@@ -23,12 +23,25 @@ Player = function(x,y) {
 Player.prototype = Object.create(Phaser.Sprite.prototype);
 Player.prototype.constructor = Player;
 
+
 /* amount of acceleration to add in pixels per sec, per sec */
 Player.prototype.accelerate = function ( amount ){
   this.engineSpeed += amount;
-  this.engineSpeed=Phaser.Math.clamp(this.engineSpeed, 0, 300);
+  this.engineSpeed=Phaser.Math.clamp(this.engineSpeed, 0, MAX_ENGINE_SPEED);
 
 };
+Player.prototype.decelerate = function ( amount ){ 
+  this.engineSpeed -= amount;
+  this.engineSpeed=Phaser.Math.clamp(this.engineSpeed, 0, MAX_ENGINE_SPEED);
+};
+/* to rotate the ship when turning */
+Player.prototype.rotate = function ( rotation ){
+  if (this.flying==false && this.body.speed < 40) return; /* if stopped on the ground then dont rotate */
+  this.angle += rotation;
+  this.angle=fixAngle(this.angle);
+  if (this.flying==false)  this.takeOff(); /* we're taking off */
+};
+
 Player.prototype.recalcVelocity = function (){
   var ang = this.angle +this.angleCorrect;
   this.calcPitch( ang );
@@ -48,8 +61,8 @@ Player.prototype.recalcGroundVelocity = function() {
 };
 
 Player.prototype.calcPitch = function (ang){
-  var yDelta = (newVector(200, ang)).y;
-  this.pitchSpeed += ((yDelta-this.pitchSpeed) * 0.02);
+  var yDelta = (newVector(PITCH_POWER/*200*/, ang)).y;
+  this.pitchSpeed += ((yDelta-this.pitchSpeed) * PITCH_LERP/*0.02*/);
 };
 Player.prototype.land = function (){
   if (this.flying==true) {
@@ -57,7 +70,7 @@ Player.prototype.land = function (){
     this.angle = 0;
     this.unstall();
     this.pitchSpeed=0;
-    this.y=580; /* @TODO: object detection */
+    //this.y=680; /* @TODO: object detection */
     console.log("land");
   }
 };
@@ -95,8 +108,7 @@ Player.prototype.checkIfUnStalled = function (){
     }
   }
 };
-Player.prototype.hitGround = function (){
-  //if (within(this.angle, 80,100)) {
+Player.prototype.hitGround = function (ground){
   var v = this.body.velocity.y;
   if (this.body.velocity.y < 40) { /* check were not hitting the ground hard */
     console.log("hit ground soft");
@@ -104,7 +116,6 @@ Player.prototype.hitGround = function (){
   }else{ /* crash */
     console.log("hit ground HARD");
   }
-  //}
 };
 Player.prototype.update = function (){
   if (this.flying)
@@ -114,49 +125,11 @@ Player.prototype.update = function (){
   if (this.stalled) {
     this.checkIfUnStalled();
   }
-  if (this.x<0) this.x=game.width;
+  if (this.x<0) this.x=game.width;  /* Wrap around the screen */
   if (this.x>game.width) this.x=0;
 
-  if (this.y>580) this.hitGround();
+  //if (this.y>680) this.hitGround();
 };
-
-/* */
-Player.prototype.decelerate = function ( amount ){ 
-  this.engineSpeed -= amount;
-  this.engineSpeed=Phaser.Math.clamp(this.engineSpeed, 0, 300);
-  //var speed = vectorToPower(this.body.velocity);
-  //if (speed > 5) {
-  //  var travelAngle = vectorToAngle(this.body.velocity.x, this.body.velocity.y);
-  //  this.body.acceleration = newVector( -amount, travelAngle );
-  //}
-};
-
-/* to rotate the ship when turning */
-Player.prototype.rotate = function ( rotation ){
-  if (this.flying==false && this.body.speed < 40) return; /* if stopped on the ground then dont rotate */
-  this.angle += rotation;
-  this.angle=fixAngle(this.angle);
-  //if (this.angle<0) this.angle+=360;
-  //if (this.angle>360) this.angle-=360;
-  if (this.flying==false) { /* we're taking off */
-    this.takeOff();
-  }
-};
-Player.prototype.getAngle = function() {
-  if (this.angle<0) return this.angle+360;
-  if (this.angle>360) return this.angle-360;
-  return this.angle;
-}
-
-/** The 'drag' in Phaser doesnt increase with speed.  To limit speed properly
- ** we need to add proper air friction. This will naturally mean acceleration is
-  ** more sharp and 'punchy' at low speeds, but stops you whizzing off the screen
-  ** in an unplayable way at high speeds. */
-Player.prototype.applyAirFriction = function ( amount /*0.01?*/ ) {
-  var fricVec = new Phaser.Point( squared(-(this.body.velocity.x*amount)),
-                                  squared(-(this.body.velocity.y*amount)) );
-  this.body.velocity = Phaser.Point.add( this.body.velocity, fricVec );
-}
 
 Player.prototype.onKilled = function () {
   myGame.explosions.explode(this.x, this.y, 1.5, 20);
@@ -177,11 +150,6 @@ Player.prototype.flyStop = function () {
   this.frame=0;
   this.flying=false;
 }
-Player.prototype.checkStoppedAccelerating = function() {
-  if (this.body.acceleration.x==0 && this.body.acceleration.y==0) {
-    this.flyStop();
-  }
-};
 
 
 /* Callback when the player is hit.  */

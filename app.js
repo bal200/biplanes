@@ -6,12 +6,19 @@
 
 /*****************************************************************/
 var PLAYER=1, ENEMY=2;
-
-var STALL_SPEED = 150; /* the speed a plane will engine stall at  */
+/* CALIBRATING VARIABLES */
+var STALL_SPEED = 160; /* the speed a plane will engine stall at  */
+var PITCH_POWER = 215; /* The addition or loss of speed from going up or down */
+var PITCH_LERP = 0.02; /* The speed the up or down of the plane can change the speed */
+var MAX_ENGINE_SPEED = 310; /* the Pitch can add more speed on though */
+var TURN_SPEED = 5; /* speed the plane rotates at */
+var ACCELERATE_SPEED = 3; /* speed the planes get upto full speed when pressing accelerator button */
+var BULLET_SPEED = 850; /* speed the bullets travel */
+var SHOOT_SPEED = 350; /* reload gun speed */
 
 /**********************************************************/
 /**********************************************************/
-var game = new Phaser.Game(800, 600, Phaser.CANVAS,'game');
+var game = new Phaser.Game(1280, 720, Phaser.CANVAS,'game');
 var myGame;
 
 var highScore=0;
@@ -21,12 +28,16 @@ var playState = {
     myGame = this;
     this.count=0;
     /* use the whole window up */
-    game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    /* if the full screen button is pressed, use this scale mode: */
+    game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
     game.load.spritesheet('plane', 'img/biplane.png', 101, 92);
     game.load.image("background", "img/background.png");
+    game.load.image("ground", "img/ground.png");
     game.load.spritesheet("bullets", "img/bullet15wh.png", 15,15);
     game.load.spritesheet("boom", "img/explosion96wh.png", 96,96);
+    game.load.image("fullscreenbutton", "img/fullscreenbutton.png");
 
   },
   /**********  Create Function  ************************************************/
@@ -37,16 +48,25 @@ var playState = {
     game.scale.onSizeChange.add(this.onSizeChange, this);
 
     game.stage.backgroundColor = '#050505';
-    //game.world.setBounds(0,0, 5000,5000);
 
-    game.add.tileSprite(0,0, 1000, 1000, 'background');
+    game.add.tileSprite(0,0, 1280, 720, 'background');
+    game.world.setBounds(-5,-5, game.width+10,game.height+10);
 
-    //this.bullets = new Bullets(game.world);
+    this.items = game.add.group(); /* hitable game objects, like ground */
+    this.ground = new Items(0,690, 'ground', this.items, /*invisible*/true);    
+
+    this.decorations = game.add.group(); /* non-hitable sprites for decoration */
+    this.groundDecor = new Decorations(0,670, 'ground', this.decorations);    
+    
+
+    this.bullets = new Bullets(game.world);
 
     //this.explosions = new Explosions(game.world);
 
-    this.player = new Player(750,580);
+    this.player = new Player(1210,667);
 
+
+    this.fullScreenButton = game.add.button(0,20, 'fullscreenbutton', this.fullScreenButtonPress, this,0,0,0);    
     /**** Register our keyboard buttons ***/
     this.cursors = game.input.keyboard.createCursorKeys();
     this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -86,28 +106,27 @@ var playState = {
       if (this.count==1) game.camera.flash(0x000000, 600, true);
 
       if (this.cursors.up.isDown) {
-        this.player.accelerate(4);
+        this.player.accelerate(ACCELERATE_SPEED);
       }
       else if (this.cursors.down.isDown) {
-        this.player.decelerate(4);
+        this.player.decelerate(ACCELERATE_SPEED);
       }
       if (this.cursors.left.isDown) {
-        this.player.rotate(-5);
+        this.player.rotate(-TURN_SPEED);
       }
       else if (this.cursors.right.isDown) {
-        this.player.rotate(+5);
+        this.player.rotate(+TURN_SPEED);
       }
       if (this.spacebar.isDown) {
         this.fireButtonClick();
       }
 
-
-      /* although were in space, air friction will limit our speed, for playability */
-      //this.player.applyAirFriction( 0.006 ); /* this is roughly 600 pixels/s */
       this.player.update();
 
-      game.physics.arcade.collide(this.player, this.bullets, playerToBulletHandler, null, this);
+      game.physics.arcade.collide(this.player, this.bullets, this.playerToBulletHandler, null, this);
 
+      game.physics.arcade.collide(this.player, this.items, this.playerToItemHandler, null, this);
+      
     //}
 
   },
@@ -116,18 +135,23 @@ var playState = {
     var speed = vectorToPower(this.player.body.velocity);
     game.debug.text("Scrn "+game.scale.width.toFixed(0)+","+game.scale.height.toFixed(0)
     +" cam "+game.camera.x+","+game.camera.y
-    +"pitchSpeed "+this.player.pitchSpeed.toFixed(0)
+    +" pitchSpeed "+this.player.pitchSpeed.toFixed(0)
     +" speed "+speed.toFixed(0)
     , 2, 14, "#00ff00");
-    //if (this.isStarted) game.debug.text("Invaders stopped: "+this.score, 2, 14, "#00ff00");
   },
 
   fireButtonClick: function() {
     if (game.time.now > this.bulletTime) {
-      this.bullets.playerShoot(this.player.x, this.player.y, this.player.angle);
-      this.bulletTime = game.time.now + 90;
+      this.bullets.playerShoot(this.player.x, this.player.y, this.player.angle+this.player.angleCorrect);
+      this.bulletTime = game.time.now + SHOOT_SPEED;
     }
   },
+  playerToBulletHandler: function(plane, bullet) {
+  },
+  playerToItemHandler: function(plane, item) {
+    plane.hitGround(item);
+  },
+
   onSizeChange: function() {
     if (this.touchControl) {
       this.touchControl.onSizeChange();
@@ -152,6 +176,12 @@ var playState = {
       this.count=0;
     }
     this.isStarted=false;
+  },
+  fullScreenButtonPress: function() {
+    if (game.scale.isFullScreen)
+      game.scale.stopFullScreen();
+    else
+      game.scale.startFullScreen(false);
   }
 };
 
