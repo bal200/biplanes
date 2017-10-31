@@ -17,6 +17,7 @@ var BULLET_SPEED = 850; /* speed the bullets travel */
 var SHOOT_SPEED = 350; /* reload gun speed */
 
 /**********************************************************/
+var LEFT=1, RIGHT=2;
 /**********************************************************/
 var game = new Phaser.Game(1280, 720, Phaser.CANVAS,'game');
 var myGame;
@@ -32,7 +33,7 @@ var playState = {
     /* if the full screen button is pressed, use this scale mode: */
     game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
-    game.load.spritesheet('plane', 'img/biplane.png', 101, 92);
+    game.load.spritesheet('plane', 'img/biplane.png', 100, 100);
     game.load.image("background", "img/background.png");
     game.load.image("ground", "img/ground.png");
     game.load.spritesheet("bullets", "img/bullet15wh.png", 15,15);
@@ -43,6 +44,7 @@ var playState = {
   /**********  Create Function  ************************************************/
   /*****************************************************************************/
   create: function() {
+    this.updateSignal = new Phaser.Signal();
     game.physics.startSystem(Phaser.Physics.ARCADE);
     game.physics.arcade.gravity.y = 100;
     game.scale.onSizeChange.add(this.onSizeChange, this);
@@ -58,13 +60,11 @@ var playState = {
     this.decorations = game.add.group(); /* non-hitable sprites for decoration */
     this.groundDecor = new Decorations(0,670, 'ground', this.decorations);    
     
-
     this.bullets = new Bullets(game.world);
 
-    //this.explosions = new Explosions(game.world);
+    this.player = new Plane(1210, 665, LEFT);
 
-    this.player = new Player(1210,667);
-
+    this.explosions = new Explosions(game.world);
 
     this.fullScreenButton = game.add.button(0,20, 'fullscreenbutton', this.fullScreenButtonPress, this,0,0,0);    
     /**** Register our keyboard buttons ***/
@@ -121,7 +121,9 @@ var playState = {
         this.fireButtonClick();
       }
 
-      this.player.update();
+      //this.player.update();
+      /* anyone else whos got stuff to run on the Update cycle */
+      this.updateSignal.dispatch(this.count);
 
       game.physics.arcade.collide(this.player, this.bullets, this.playerToBulletHandler, null, this);
 
@@ -142,7 +144,7 @@ var playState = {
 
   fireButtonClick: function() {
     if (game.time.now > this.bulletTime) {
-      this.bullets.playerShoot(this.player.x, this.player.y, this.player.angle+this.player.angleCorrect);
+      this.bullets.playerShoot(this.player.x, this.player.y, this.player.angle);
       this.bulletTime = game.time.now + SHOOT_SPEED;
     }
   },

@@ -1,7 +1,15 @@
 
- /* The players object
-  * An extension of the sprite class */
 Player = function(x,y) {
+  this.x=x; this.y=y;
+  this.score=0;
+
+}
+
+
+
+ /* The Plane object
+  * An extension of the sprite class */
+Plane = function(x,y, dir) {
   Phaser.Sprite.call(this, game, x, y, 'plane');
   //this.animations.add('fly', [1,2,3,4], 10, true);
   this.frame = 0;
@@ -13,37 +21,40 @@ Player = function(x,y) {
   this.scale.set(0.5,0.5);
   this.body.allowGravity = false;
   game.world.add(this);
-
+  this.direction=dir; /* which way the planes pointing */
+  this.frame = (this.direction==LEFT ? 0 : 1);
+  this.angle = (this.direction==LEFT ? 270 : 90); /* 0 points the plane straight up */
   this.engineSpeed = 0;
   this.pitchSpeed = 0;
   this.stalled = false;
   this.flying = false;
-  this.angleCorrect = -90; /* to correct for sprites drawn angle different from direction angle */
+  myGame.updateSignal.add(this.update, this); /* we need to recalc each update, so subscribe */
+  this.events.onKilled.add(this.onKilled ,this);
 };
-Player.prototype = Object.create(Phaser.Sprite.prototype);
-Player.prototype.constructor = Player;
+Plane.prototype = Object.create(Phaser.Sprite.prototype);
+Plane.prototype.constructor = Plane;
 
 
 /* amount of acceleration to add in pixels per sec, per sec */
-Player.prototype.accelerate = function ( amount ){
+Plane.prototype.accelerate = function ( amount ){
   this.engineSpeed += amount;
   this.engineSpeed=Phaser.Math.clamp(this.engineSpeed, 0, MAX_ENGINE_SPEED);
 
 };
-Player.prototype.decelerate = function ( amount ){ 
+Plane.prototype.decelerate = function ( amount ){ 
   this.engineSpeed -= amount;
   this.engineSpeed=Phaser.Math.clamp(this.engineSpeed, 0, MAX_ENGINE_SPEED);
 };
 /* to rotate the ship when turning */
-Player.prototype.rotate = function ( rotation ){
+Plane.prototype.rotate = function ( rotation ){
   if (this.flying==false && this.body.speed < 40) return; /* if stopped on the ground then dont rotate */
   this.angle += rotation;
   this.angle=fixAngle(this.angle);
   if (this.flying==false)  this.takeOff(); /* we're taking off */
 };
 
-Player.prototype.recalcVelocity = function (){
-  var ang = this.angle +this.angleCorrect;
+Plane.prototype.recalcVelocity = function (){
+  var ang = this.angle;
   this.calcPitch( ang );
   //this.pitchSpeed=Phaser.Math.clamp(this.pitchSpeed, -100, 200);
   var speed = this.pitchSpeed + this.engineSpeed;
@@ -54,27 +65,27 @@ Player.prototype.recalcVelocity = function (){
     this.body.velocity = newVector(speed, ang);
   
 };
-Player.prototype.recalcGroundVelocity = function() {
-  var ang = this.angle +this.angleCorrect;
+Plane.prototype.recalcGroundVelocity = function() {
+  var ang = this.angle;
   var speed = this.engineSpeed;
   this.body.velocity = newVector(speed, ang);
 };
 
-Player.prototype.calcPitch = function (ang){
+Plane.prototype.calcPitch = function (ang){
   var yDelta = (newVector(PITCH_POWER/*200*/, ang)).y;
   this.pitchSpeed += ((yDelta-this.pitchSpeed) * PITCH_LERP/*0.02*/);
 };
-Player.prototype.land = function (){
+Plane.prototype.land = function (){
   if (this.flying==true) {
     this.flying = false;
-    this.angle = 0;
+    this.angle = -90;
     this.unstall();
     this.pitchSpeed=0;
     //this.y=680; /* @TODO: object detection */
     console.log("land");
   }
 };
-Player.prototype.takeOff = function (){
+Plane.prototype.takeOff = function (){
   if (this.flying==false) {
     if (this.body.speed > 40) {
       this.flying=true;
@@ -82,14 +93,14 @@ Player.prototype.takeOff = function (){
     }
   }
 };
-Player.prototype.stall = function (){
+Plane.prototype.stall = function (){
   if (this.stalled==false) {
     this.body.allowGravity = true;
     this.stalled=true;
     console.log("stalled");
   }
 };
-Player.prototype.unstall = function (){
+Plane.prototype.unstall = function (){
   if (this.stalled==true) {
     this.body.allowGravity = false;
     this.stalled=false;
@@ -97,10 +108,10 @@ Player.prototype.unstall = function (){
     console.log("un-stalled");
   }
 };
-Player.prototype.checkIfUnStalled = function (){
+Plane.prototype.checkIfUnStalled = function (){
   if (this.body.speed > (STALL_SPEED+5)) {
     var travelAngle = vectorToAngle(this.body.velocity.x, this.body.velocity.y);
-    var ang = fixAngle(this.angle +this.angleCorrect);
+    var ang = fixAngle(this.angle);
     var angleDif = travelAngle - ang;
     //console.log("*****Travel "+travelAngle.toFixed(0)+" angle "+ang.toFixed(0));
     if (Math.abs(angleDif) < 15) {
@@ -108,16 +119,22 @@ Player.prototype.checkIfUnStalled = function (){
     }
   }
 };
-Player.prototype.hitGround = function (ground){
-  var v = this.body.velocity.y;
-  if (this.body.velocity.y < 40) { /* check were not hitting the ground hard */
+Plane.prototype.hitGround = function (ground){
+  //var v = this.body.velocity.y;
+  var v = Math.abs( this.deltaY );
+  console.log("v "+v);
+  if (v < 0.9/*40*/) { /* check were not hitting the ground hard */
     console.log("hit ground soft");
     this.land();
   }else{ /* crash */
     console.log("hit ground HARD");
+    this.kill();
+    //this.x=1210; this.y=665;
+    //this.engineSpeed = 0; this.pitchSpeed = 0;
+    //this.angle=(this.direction==LEFT ? 270 : 90);
   }
 };
-Player.prototype.update = function (){
+Plane.prototype.update = function (){
   if (this.flying)
     this.recalcVelocity();
   else
@@ -131,21 +148,23 @@ Player.prototype.update = function (){
   //if (this.y>680) this.hitGround();
 };
 
-Player.prototype.onKilled = function () {
-  myGame.explosions.explode(this.x, this.y, 1.5, 20);
-  this.kill();
+Plane.prototype.onKilled = function () {
+  myGame.explosions.explode(this.x, this.y, 1.0, 40);
+
   /* Just restart the whole game in a few secs */
-  game.time.events.add(2000, function() {
-    myGame.restartGame();
+  game.time.events.add(1500, function() {
+     myGame.respawnPlayerSignal.dispatch();
+    //myGame.restartGame();
   }, this);
-  if (myGame.score > highScore) highScore = myGame.score;
+
+  //if (myGame.score > highScore) highScore = myGame.score;
 }
 
-Player.prototype.flyStart = function () {
+Plane.prototype.flyStart = function () {
   this.animations.play('fly');
   this.flying=true;
 }
-Player.prototype.flyStop = function () {
+Plane.prototype.flyStop = function () {
   this.animations.stop();
   this.frame=0;
   this.flying=false;
