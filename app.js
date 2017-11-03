@@ -14,7 +14,7 @@ var MAX_ENGINE_SPEED = 310; /* the Pitch can add more speed on though */
 var TURN_SPEED = 5; /* speed the plane rotates at */
 var ACCELERATE_SPEED = 3; /* speed the planes get upto full speed when pressing accelerator button */
 var BULLET_SPEED = 850; /* speed the bullets travel */
-var SHOOT_SPEED = 350; /* reload gun speed */
+var SHOOT_SPEED = 200; /* reload gun speed */
 
 /**********************************************************/
 var LEFT=1, RIGHT=2;
@@ -62,7 +62,8 @@ var playState = {
     
     this.bullets = new Bullets(game.world);
 
-    this.player = new Plane(1210, 665, LEFT);
+    this.player = new Player(1210, 665, LEFT);
+    this.enemy = new Enemy(50, 665, RIGHT);
 
     this.explosions = new Explosions(game.world);
 
@@ -104,47 +105,50 @@ var playState = {
       this.count++;
       /* Fade in from Black at start of Game */
       if (this.count==1) game.camera.flash(0x000000, 600, true);
+      if (this.count==50) {
+        this.enemy.startAI();
+        console.log("starting AI");
+      }
 
       if (this.cursors.up.isDown) {
-        this.player.accelerate(ACCELERATE_SPEED);
+        this.player.plane.accelerate(ACCELERATE_SPEED);
       }
       else if (this.cursors.down.isDown) {
-        this.player.decelerate(ACCELERATE_SPEED);
+        this.player.plane.decelerate(ACCELERATE_SPEED);
       }
       if (this.cursors.left.isDown) {
-        this.player.rotate(-TURN_SPEED);
+        this.player.plane.rotate(-TURN_SPEED);
       }
       else if (this.cursors.right.isDown) {
-        this.player.rotate(+TURN_SPEED);
+        this.player.plane.rotate(+TURN_SPEED);
       }
       if (this.spacebar.isDown) {
         this.fireButtonClick();
       }
 
-      //this.player.update();
       /* anyone else whos got stuff to run on the Update cycle */
       this.updateSignal.dispatch(this.count);
 
-      game.physics.arcade.collide(this.player, this.bullets, this.playerToBulletHandler, null, this);
+      game.physics.arcade.collide(this.player.plane, this.bullets, this.playerToBulletHandler, null, this);
 
-      game.physics.arcade.collide(this.player, this.items, this.playerToItemHandler, null, this);
+      game.physics.arcade.collide(this.player.plane, this.items, this.playerToItemHandler, null, this);
       
     //}
 
   },
 
   render: function() {
-    var speed = vectorToPower(this.player.body.velocity);
+    var speed = vectorToPower(this.player.plane.body.velocity);
     game.debug.text("Scrn "+game.scale.width.toFixed(0)+","+game.scale.height.toFixed(0)
     +" cam "+game.camera.x+","+game.camera.y
-    +" pitchSpeed "+this.player.pitchSpeed.toFixed(0)
+    +" pitchSpeed "+this.player.plane.pitchSpeed.toFixed(0)
     +" speed "+speed.toFixed(0)
     , 2, 14, "#00ff00");
   },
 
   fireButtonClick: function() {
     if (game.time.now > this.bulletTime) {
-      this.bullets.playerShoot(this.player.x, this.player.y, this.player.angle);
+      this.bullets.playerShoot(this.player.plane.x, this.player.plane.y, this.player.plane.angle);
       this.bulletTime = game.time.now + SHOOT_SPEED;
     }
   },
@@ -221,6 +225,19 @@ function vectorToPower( vec ) {
 /* The Squared function, or x to the power of 2, but also keeps the sign */
 function squared( n ) {
   return (n>=0) ? n*n : -(n*n);
+}
+/* correct an angle so its within our 0-360 range */
+function fixAngle( a ) {
+  if (a<0) return a+360;
+  if (a>360) return a-360;
+  return a;
+}
+/* Get the direction we need to turn for angle A to meet angle B */
+/* returns either +1 or -1, to indicate the direction */
+function shortestRouteToAngle( a, b ) {
+  if (b<a) b += 360;  /* first put B above A */
+  if ((b - a) < 180) return +1;  /* if going forwards is less than 180, then forwards is closest */
+  return -1;  /* if above is false, it can only be backwards */
 }
 
 /****** OO ******/

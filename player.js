@@ -1,11 +1,9 @@
 
-Player = function(x,y) {
+Player = function(x,y, dir) {
   this.x=x; this.y=y;
   this.score=0;
-
+  this.plane = new Plane(x,y, dir);
 }
-
-
 
  /* The Plane object
   * An extension of the sprite class */
@@ -24,10 +22,10 @@ Plane = function(x,y, dir) {
   this.direction=dir; /* which way the planes pointing */
   this.frame = (this.direction==LEFT ? 0 : 1);
   this.angle = (this.direction==LEFT ? 270 : 90); /* 0 points the plane straight up */
-  this.engineSpeed = 0;
-  this.pitchSpeed = 0;
+  this.engineSpeed = 0; /* these 2 speed figures are combined for actual speed */
+  this.pitchSpeed = 0;  /* engineSpeed set by user, pitchSpeed set from climbing or goning down */
   this.stalled = false;
-  this.flying = false;
+  this.flying = false; /* if in the air or on the ground */
   myGame.updateSignal.add(this.update, this); /* we need to recalc each update, so subscribe */
   this.events.onKilled.add(this.onKilled ,this);
 };
@@ -39,20 +37,21 @@ Plane.prototype.constructor = Plane;
 Plane.prototype.accelerate = function ( amount ){
   this.engineSpeed += amount;
   this.engineSpeed=Phaser.Math.clamp(this.engineSpeed, 0, MAX_ENGINE_SPEED);
-
 };
 Plane.prototype.decelerate = function ( amount ){ 
   this.engineSpeed -= amount;
   this.engineSpeed=Phaser.Math.clamp(this.engineSpeed, 0, MAX_ENGINE_SPEED);
 };
-/* to rotate the ship when turning */
 Plane.prototype.rotate = function ( rotation ){
   if (this.flying==false && this.body.speed < 40) return; /* if stopped on the ground then dont rotate */
   this.angle += rotation;
   this.angle=fixAngle(this.angle);
   if (this.flying==false)  this.takeOff(); /* we're taking off */
 };
-
+Plane.prototype.getAngle = function() {
+  return fixAngle( this.angle );
+}
+/* run each upate, to alter speed if climbing or going down  */
 Plane.prototype.recalcVelocity = function (){
   var ang = this.angle;
   this.calcPitch( ang );
@@ -183,9 +182,3 @@ function playerToEnemyHandler(player, enemy) {
   /* Do nothing for now.  The physics engine will bounce them for now */
 }
 
-/* correct an angle so its within our 0-360 range */
-function fixAngle(a) {
-  if (a<0) return a+360;
-  if (a>360) return a-360;
-  return a;
-}
