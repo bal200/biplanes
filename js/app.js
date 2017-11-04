@@ -45,6 +45,8 @@ var playState = {
   /**********  Create Function  ************************************************/
   /*****************************************************************************/
   create: function() {
+    game.time.advancedTiming = true;
+
     this.updateSignal = new Phaser.Signal();
     game.physics.startSystem(Phaser.Physics.ARCADE);
     game.physics.arcade.gravity.y = 100;
@@ -69,7 +71,7 @@ var playState = {
 
     this.explosions = new Explosions(game.world);
 
-    this.fullScreenButton = game.add.button(0,20, 'fullscreenbutton', this.fullScreenButtonPress, this,0,0,0);    
+    this.fullScreenButton = game.add.button(3,3, 'fullscreenbutton', this.fullScreenButtonPress, this,0,0,0);    
     this.scoreboard= new Scoreboard( this.enemy, this.player, game.world );
 
     /**** Register our keyboard buttons ***/
@@ -109,7 +111,7 @@ var playState = {
       this.count++;
       /* Fade in from Black at start of Game */
       if (this.count==1) game.camera.flash(0x000000, 600, true);
-      if (this.count==50) {
+      if (this.count==150) {
         this.enemy.startAI();
         console.log("starting AI");
       }
@@ -142,12 +144,14 @@ var playState = {
   },
 
   render: function() {
-    var speed = vectorToPower(this.player.plane.body.velocity);
-    game.debug.text("Scrn "+game.scale.width.toFixed(0)+","+game.scale.height.toFixed(0)
-    +" cam "+game.camera.x+","+game.camera.y
-    +" pitchSpeed "+this.player.plane.pitchSpeed.toFixed(0)
-    +" speed "+speed.toFixed(0)
-    , 2, 14, "#00ff00");
+    var speed = vectorToPower(this.enemy.plane.body.velocity);
+    game.debug.text(game.time.fps+"fps "
+    + "Scrn "+game.scale.width.toFixed(0)+","+game.scale.height.toFixed(0)
+    //+" cam "+game.camera.x+","+game.camera.y
+    //+" pitchSpeed "+this.enemy.plane.pitchSpeed.toFixed(0)
+    +" velocity "+speed.toFixed(0)
+    +" speed "+this.enemy.plane.body.speed.toFixed(0)
+    , 150, 14, "#00ff00");
   },
 
   fireButtonClick: function() {

@@ -5,7 +5,7 @@ var Explosions = function ( group ) {
   Phaser.Group.call(this, game); /* create a Group, the parent Class */
 
   /******* Explosions group ********/
-  this.createMultiple(5, 'boom'/*sprite sheet*/);
+  this.createMultiple(3, 'boom'/*sprite sheet*/);
   group.add( this );
   this.forEach(function(exp) {
     exp.anchor.set(0.5, 0.5);

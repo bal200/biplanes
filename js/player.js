@@ -44,12 +44,12 @@ Scoreboard = function( left, right, group ) {
 
   this.leftText = game.add.text(0, 0, "0", style);
   //this.leftText.setStyle({boundsAlignH: "left"});
-  this.leftText.setTextBounds(15, 35, game.width-(15*2), 100);
+  this.leftText.setTextBounds(15, 15, game.width-(15*2), 100);
   this.leftText.setShadow(1, 1, 'rgba(0,0,0, 0.8)', 0);
 
   this.rightText = game.add.text(0, 0, "0", style);
   this.rightText.boundsAlignH="right";
-  this.rightText.setTextBounds(15, 35, game.width-(15*2), 100);
+  this.rightText.setTextBounds(15, 15, game.width-(15*2), 100);
   this.rightText.setShadow(1, 1, 'rgba(0,0,0, 0.8)', 0);
 
 }

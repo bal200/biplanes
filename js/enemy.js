@@ -71,7 +71,7 @@ Enemy.prototype.logicHandler = function() {
       this.shootAtPlayer();
     }
   }else{ /* on the ground */
-    if (plane.body.speed > 220) this.angleTo(45);
+    if (vectorToPower(plane.body.velocity) > 220)  this.angleTo(45); /* take off if fast enough */
   }
   this.logicTimer=game.time.events.add(/*time*/game.rnd.between(230, 270), function() {
     this.logicHandler();

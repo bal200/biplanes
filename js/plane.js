@@ -78,16 +78,20 @@ Plane.prototype.calcPitch = function (ang){
 Plane.prototype.land = function (){
   if (this.flying==true) {
     this.flying = false;
-    this.angle = -90;
+    this.angle = (this.pointingDirection()==LEFT ? 270 : 90);
     this.unstall();
     this.pitchSpeed=0;
     //this.y=680; /* @TODO: object detection */
     console.log("land");
   }
 };
+Plane.prototype.pointingDirection = function() {
+  if (this.getAngle() >= 180) return LEFT;
+  else  return RIGHT;
+};
 Plane.prototype.takeOff = function (){
   if (this.flying==false) {
-    if (this.body.speed > 40) {
+    if (/*this.body.speed*/vectorToPower(this.body.velocity) > 40) {
       this.flying=true;
       console.log("take off");
     }
