@@ -15,8 +15,12 @@ Enemy.prototype.onKilled = function() {
     this.respawnPlane();
     this.startAI();
   }, this);
-
+  myGame.player.scored();
   //if (myGame.score > highScore) highScore = myGame.score;
+};
+Enemy.prototype.scored = function() {
+  this.score++;
+  myGame.scoreboard.scored(ENEMY);
 };
 Enemy.prototype.respawnPlane = function() {
   this.plane.revive();
@@ -135,7 +139,6 @@ Enemy.prototype.playerIsInSights = function () {
 };
 Enemy.prototype.shootAtPlayer = function () {
   if (game.time.now > this.bulletTime) {
-    console.log("its bulletTime!");
     myGame.bullets.shoot(this.plane.x, this.plane.y, this.plane.getAngle(), ENEMY);
     this.bulletTime = game.time.now + SHOOT_SPEED;
   }

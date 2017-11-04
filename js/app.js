@@ -70,6 +70,8 @@ var playState = {
     this.explosions = new Explosions(game.world);
 
     this.fullScreenButton = game.add.button(0,20, 'fullscreenbutton', this.fullScreenButtonPress, this,0,0,0);    
+    this.scoreboard= new Scoreboard( this.enemy, this.player, game.world );
+
     /**** Register our keyboard buttons ***/
     this.cursors = game.input.keyboard.createCursorKeys();
     this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -149,7 +151,8 @@ var playState = {
   },
 
   fireButtonClick: function() {
-    if (game.time.now > this.bulletTime) {
+    if (game.time.now > this.bulletTime  && 
+       this.player.plane.alive && this.player.plane.flying) {
       this.bullets.shoot(this.player.plane.x, this.player.plane.y, this.player.plane.angle, PLAYER);
       this.bulletTime = game.time.now + SHOOT_SPEED;
     }
