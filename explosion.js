@@ -29,17 +29,37 @@ Explosions.prototype.explode = function ( x,y, size, speed ) {
 
 
 Enemy = function(x,y, dir) {
-  this.x=x; this.y=y;
+  this.x=x; this.y=y; this.dir=dir; /* respawn place */
   this.score=0;
   this.plane = new Plane(x,y, dir);
+  this.plane.setParent(this);
   this.targetDir=0;
   this.targetSpeed=0;
   myGame.updateSignal.add(this.update, this); /* we need to recalc each update, so subscribe */
   
 }
+Enemy.prototype.onKilled = function() {
+  this.stopAI();
+  game.time.events.add(1500, function() {
+    // @TODO respawning
+    //myGame.respawnPlayerSignal.dispatch();
+    this.respawnPlane();
+    this.startAI();
+  }, this);
+
+  //if (myGame.score > highScore) highScore = myGame.score;
+};
+Enemy.prototype.respawnPlane = function() {
+  this.plane.revive();
+  this.plane.x=this.x; this.plane.y=this.y;
+  this.plane.myReset(this.dir);
+  this.targetDir=this.plane.getAngle();
+  this.targetSpeed=0;
+};
+
 Enemy.prototype.update = function () {
-  //console.log("enemy update");
-  var plane = this.plane;
+  if (!this.plane.alive) console.log("enemy not alive");
+  var plane = this.plane; if (!plane.alive) return;
   /* Creep towards target angle */
   var angleDiff = Math.abs( this.targetDir - plane.getAngle() );
   var whichWay=shortestRouteToAngle(plane.getAngle(), this.targetDir );
@@ -52,8 +72,11 @@ Enemy.prototype.update = function () {
 }
 Enemy.prototype.startAI = function () {
   this.targetSpeed = 300; /* prepare for take off! */
-  this.targetDir = 90;
+  this.targetDir = this.plane.angle;
   this.logicHandler();
+}
+Enemy.prototype.stopAI = function () {
+  game.time.events.remove(this.logicTimer);
 }
 /* This AI logic handler gets re-called every 2 secs to change the ufo direction */
 Enemy.prototype.logicHandler = function() {
@@ -73,7 +96,7 @@ Enemy.prototype.logicHandler = function() {
   }else{ /* on the ground */
     if (plane.body.speed > 220) this.angleTo(45);
   }
-  game.time.events.add(/*time*/game.rnd.between(230, 270), function() {
+  this.logicTimer=game.time.events.add(/*time*/game.rnd.between(230, 270), function() {
     this.logicHandler();
   }, this);
 }
@@ -84,9 +107,9 @@ Enemy.prototype.canISeePlayer = function() {
   var angleDiff = Math.abs( playerAng - this.plane.getAngle() );
   if (dist > 600) {
     return (angleDiff < 45);
-  }else if (dist > 300) {
-    return (angleDiff < 125);
-  }else if (dist < 200) {
+  }else if (dist > 350) {
+    return (angleDiff < 135);
+  }else if (dist < 250) {
     return (true);
   }
   //var whichWay=shortestRouteToAngle(plane.getAngle(), this.targetDir );
@@ -95,13 +118,13 @@ Enemy.prototype.canISeePlayer = function() {
 Enemy.prototype.distanceToPlayer = function() {
   var player = myGame.player.plane;
   var enemy = this.plane;
-  if (player==null) return 100000;
+  if (!player.alive) return 100000;
   return Phaser.Math.distance(enemy.x,enemy.y, player.x,player.y);
 };
 Enemy.prototype.angleToPlayer = function() {
   var player = myGame.player.plane;
   var enemy = this.plane;
-  if (player==null) return null;
+  if (!player.alive) return null;
   var ang = (Phaser.Math.radToDeg(
          Phaser.Math.angleBetweenPoints(enemy, player) )) + 90;
   return fixAngle( ang );

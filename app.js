@@ -62,6 +62,7 @@ var playState = {
     
     this.bullets = new Bullets(game.world);
 
+    this.planesGroup = game.add.group();
     this.player = new Player(1210, 665, LEFT);
     this.enemy = new Enemy(50, 665, RIGHT);
 
@@ -129,9 +130,9 @@ var playState = {
       /* anyone else whos got stuff to run on the Update cycle */
       this.updateSignal.dispatch(this.count);
 
-      game.physics.arcade.collide(this.player.plane, this.bullets, this.playerToBulletHandler, null, this);
+      game.physics.arcade.collide(this.planesGroup, this.bullets, this.playerToBulletHandler, null, this);
 
-      game.physics.arcade.collide(this.player.plane, this.items, this.playerToItemHandler, null, this);
+      game.physics.arcade.collide(this.planesGroup, this.items, this.playerToItemHandler, null, this);
       
     //}
 

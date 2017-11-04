@@ -1,16 +1,29 @@
 
 Player = function(x,y, dir) {
-  this.x=x; this.y=y;
+  this.x=x; this.y=y; this.dir=dir;
   this.score=0;
   this.plane = new Plane(x,y, dir);
+  this.plane.setParent(this);
 }
+/* called when your plane died, to update score and respawn */
+Player.prototype.onKilled = function() {
+  this.respawnPlane()
+};
 
+Player.prototype.respawnPlane = function() {
+  game.time.events.add(1500, function() {
+    this.plane.revive();
+    this.plane.x=this.x; this.plane.y=this.y;
+    this.plane.myReset(this.dir);
+  }, this);
+};
+
+/****************************************************************************************/
  /* The Plane object
   * An extension of the sprite class */
 Plane = function(x,y, dir) {
   Phaser.Sprite.call(this, game, x, y, 'plane');
   //this.animations.add('fly', [1,2,3,4], 10, true);
-  this.frame = 0;
 
   game.physics.enable(this, Phaser.Physics.ARCADE);
   /* make the ship naturally slow to a stop if left */
@@ -18,20 +31,27 @@ Plane = function(x,y, dir) {
   this.anchor.set(0.5, 0.5);
   this.scale.set(0.5,0.5);
   this.body.allowGravity = false;
-  game.world.add(this);
-  this.direction=dir; /* which way the planes pointing */
-  this.frame = (this.direction==LEFT ? 0 : 1);
-  this.angle = (this.direction==LEFT ? 270 : 90); /* 0 points the plane straight up */
-  this.engineSpeed = 0; /* these 2 speed figures are combined for actual speed */
-  this.pitchSpeed = 0;  /* engineSpeed set by user, pitchSpeed set from climbing or goning down */
-  this.stalled = false;
-  this.flying = false; /* if in the air or on the ground */
+  this.myReset(dir);
+  myGame.planesGroup.add(this); /* group */
   myGame.updateSignal.add(this.update, this); /* we need to recalc each update, so subscribe */
   this.events.onKilled.add(this.onKilled ,this);
 };
 Plane.prototype = Object.create(Phaser.Sprite.prototype);
 Plane.prototype.constructor = Plane;
+Plane.prototype.setParent=function(p){ this.myParent=p; }
 
+Plane.prototype.myReset = function (dir){ 
+  //this.frame = 0;
+  this.direction=dir; /* which way the planes pointing */
+  this.frame = (this.direction==LEFT ? 0 : 1);
+  this.angle = (this.direction==LEFT ? 270 : 90); /* 0 points the plane straight up */
+  this.engineSpeed = 0; /* these 2 speed figures are combined for actual speed */
+  this.pitchSpeed = 0;  /* engineSpeed set by user, pitchSpeed set from climbing or goning down */
+  this.body.allowGravity = false;
+  this.stalled = false;
+  this.flying = false; /* if in the air or on the ground */
+  this.body.velocity.setTo(0,0);
+};
 
 /* amount of acceleration to add in pixels per sec, per sec */
 Plane.prototype.accelerate = function ( amount ){
@@ -50,7 +70,7 @@ Plane.prototype.rotate = function ( rotation ){
 };
 Plane.prototype.getAngle = function() {
   return fixAngle( this.angle );
-}
+};
 /* run each upate, to alter speed if climbing or going down  */
 Plane.prototype.recalcVelocity = function (){
   var ang = this.angle;
@@ -149,14 +169,15 @@ Plane.prototype.update = function (){
 
 Plane.prototype.onKilled = function () {
   myGame.explosions.explode(this.x, this.y, 1.0, 40);
+  this.myParent.onKilled(); /* let the AI or controller know too */
 
   /* Just restart the whole game in a few secs */
-  game.time.events.add(1500, function() {
-     myGame.respawnPlayerSignal.dispatch();
+  //game.time.events.add(1500, function() {
+     // @TODO respawning
+     //myGame.respawnPlayerSignal.dispatch();
     //myGame.restartGame();
-  }, this);
+  //}, this);
 
-  //if (myGame.score > highScore) highScore = myGame.score;
 }
 
 Plane.prototype.flyStart = function () {
