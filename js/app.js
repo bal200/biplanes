@@ -1,4 +1,4 @@
-/*****Biplanes Game
+/***** Biplanes Game
  ***** By Andy Ballard
  *****
  *****
@@ -6,15 +6,16 @@
 
 /*****************************************************************/
 var PLAYER=1, ENEMY=2;
-/* CALIBRATING VARIABLES */
+/******** GAME CALIBRATION VARIABLES ********/
 var STALL_SPEED = 160; /* the speed a plane will engine stall at  */
 var PITCH_POWER = 215; /* The addition or loss of speed from going up or down */
 var PITCH_LERP = 0.02; /* The speed the up or down of the plane can change the speed */
 var MAX_ENGINE_SPEED = 310; /* the Pitch can add more speed on though */
 var TURN_SPEED = 5; /* speed the plane rotates at */
 var ACCELERATE_SPEED = 3; /* speed the planes get upto full speed when pressing accelerator button */
-var BULLET_SPEED = 850; /* speed the bullets travel */
-var SHOOT_SPEED = 200; /* reload gun speed */
+var BULLET_SPEED = 850; /* speed the bullets travel (pixel/s) */
+var SHOOT_SPEED = 200; /* reload gun speed (ms) */
+var CRASH_SPEED = 0.9; /* Max Y speed when touching ground for safe landing, any faster then crash */
 
 /**********************************************************/
 var LEFT=1, RIGHT=2;
@@ -22,7 +23,7 @@ var LEFT=1, RIGHT=2;
 var game = new Phaser.Game(1280, 720, Phaser.CANVAS,'game');
 var myGame;
 
-var highScore=0;
+//var highScore=0;
 
 var playState = {
   preload: function() {
@@ -130,9 +131,9 @@ var playState = {
       /* anyone else whos got stuff to run on the Update cycle */
       this.updateSignal.dispatch(this.count);
 
-      game.physics.arcade.collide(this.planesGroup, this.bullets, this.playerToBulletHandler, null, this);
+      game.physics.arcade.collide(this.planesGroup, this.bullets, this.planeToBulletHandler, null, this);
 
-      game.physics.arcade.collide(this.planesGroup, this.items, this.playerToItemHandler, null, this);
+      game.physics.arcade.collide(this.planesGroup, this.items, this.planeToItemHandler, null, this);
       
     //}
 
@@ -149,13 +150,14 @@ var playState = {
 
   fireButtonClick: function() {
     if (game.time.now > this.bulletTime) {
-      this.bullets.playerShoot(this.player.plane.x, this.player.plane.y, this.player.plane.angle);
+      this.bullets.shoot(this.player.plane.x, this.player.plane.y, this.player.plane.angle, PLAYER);
       this.bulletTime = game.time.now + SHOOT_SPEED;
     }
   },
-  playerToBulletHandler: function(plane, bullet) {
+  planeToBulletHandler: function(plane, bullet) {
+    plane.planeToBulletHandler(bullet);
   },
-  playerToItemHandler: function(plane, item) {
+  planeToItemHandler: function(plane, item) {
     plane.hitGround(item);
   },
 

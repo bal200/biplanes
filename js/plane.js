@@ -1,26 +1,6 @@
 
-Player = function(x,y, dir) {
-  this.x=x; this.y=y; this.dir=dir;
-  this.score=0;
-  this.plane = new Plane(x,y, dir);
-  this.plane.setParent(this);
-}
-/* called when your plane died, to update score and respawn */
-Player.prototype.onKilled = function() {
-  this.respawnPlane()
-};
-
-Player.prototype.respawnPlane = function() {
-  game.time.events.add(1500, function() {
-    this.plane.revive();
-    this.plane.x=this.x; this.plane.y=this.y;
-    this.plane.myReset(this.dir);
-  }, this);
-};
-
-/****************************************************************************************/
- /* The Plane object
-  * An extension of the sprite class */
+/* The Plane object
+ * An extension of the sprite class */
 Plane = function(x,y, dir) {
   Phaser.Sprite.call(this, game, x, y, 'plane');
   //this.animations.add('fly', [1,2,3,4], 10, true);
@@ -52,6 +32,7 @@ Plane.prototype.myReset = function (dir){
   this.flying = false; /* if in the air or on the ground */
   this.body.velocity.setTo(0,0);
 };
+/****************************************************************************************/
 
 /* amount of acceleration to add in pixels per sec, per sec */
 Plane.prototype.accelerate = function ( amount ){
@@ -141,16 +122,13 @@ Plane.prototype.checkIfUnStalled = function (){
 Plane.prototype.hitGround = function (ground){
   //var v = this.body.velocity.y;
   var v = Math.abs( this.deltaY );
-  console.log("v "+v);
-  if (v < 0.9/*40*/) { /* check were not hitting the ground hard */
+  //console.log("v "+v);
+  if (v < CRASH_SPEED/*0.9*/) { /* check were not hitting the ground hard */
     console.log("hit ground soft");
     this.land();
   }else{ /* crash */
     console.log("hit ground HARD");
     this.kill();
-    //this.x=1210; this.y=665;
-    //this.engineSpeed = 0; this.pitchSpeed = 0;
-    //this.angle=(this.direction==LEFT ? 270 : 90);
   }
 };
 Plane.prototype.update = function (){
@@ -170,16 +148,22 @@ Plane.prototype.update = function (){
 Plane.prototype.onKilled = function () {
   myGame.explosions.explode(this.x, this.y, 1.0, 40);
   this.myParent.onKilled(); /* let the AI or controller know too */
-
-  /* Just restart the whole game in a few secs */
-  //game.time.events.add(1500, function() {
-     // @TODO respawning
-     //myGame.respawnPlayerSignal.dispatch();
-    //myGame.restartGame();
-  //}, this);
-
 }
 
+/* Callback when the player or enemy plane is shot.  */
+Plane.prototype.planeToBulletHandler = function(bullet){
+//function planeToBulletHandler(plane, bullet) {
+  /* @TODO bullet collision */
+  //if (bullet.whos == ENEMY) { /* check weve not clipped our own bullet */
+    this.kill(); /* kill the plane */
+    //this.onKilled(); 
+    bullet.kill(); /* kill the bullet too */
+    //bulletOnKilled(bullet);
+  //}
+}
+
+
+/*** NOT USED  */
 Plane.prototype.flyStart = function () {
   this.animations.play('fly');
   this.flying=true;
@@ -189,17 +173,4 @@ Plane.prototype.flyStop = function () {
   this.frame=0;
   this.flying=false;
 }
-
-
-/* Callback when the player is hit.  */
-function playerToBulletHandler(player, bullet) {
-  if (bullet.whos == ENEMY) { /* check weve not clipped our own bullet */
-    player.onKilled();
-    bulletOnKilled(bullet);
-  }
-}
-
-function playerToEnemyHandler(player, enemy) {
-  /* Do nothing for now.  The physics engine will bounce them for now */
-}
-
+  
