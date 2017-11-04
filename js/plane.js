@@ -152,13 +152,9 @@ Plane.prototype.onKilled = function () {
 
 /* Callback when the player or enemy plane is shot.  */
 Plane.prototype.planeToBulletHandler = function(bullet){
-//function planeToBulletHandler(plane, bullet) {
-  /* @TODO bullet collision */
   //if (bullet.whos == ENEMY) { /* check weve not clipped our own bullet */
     this.kill(); /* kill the plane */
-    //this.onKilled(); 
     bullet.kill(); /* kill the bullet too */
-    //bulletOnKilled(bullet);
   //}
 }
 

@@ -13,8 +13,8 @@ var PITCH_LERP = 0.02; /* The speed the up or down of the plane can change the s
 var MAX_ENGINE_SPEED = 310; /* the Pitch can add more speed on though */
 var TURN_SPEED = 5; /* speed the plane rotates at */
 var ACCELERATE_SPEED = 3; /* speed the planes get upto full speed when pressing accelerator button */
-var BULLET_SPEED = 850; /* speed the bullets travel (pixel/s) */
-var SHOOT_SPEED = 200; /* reload gun speed (ms) */
+var BULLET_SPEED = 750; /* speed the bullets travel (pixel/s) */
+var SHOOT_SPEED = 300; /* reload gun speed (ms) */
 var CRASH_SPEED = 0.9; /* Max Y speed when touching ground for safe landing, any faster then crash */
 
 /**********************************************************/

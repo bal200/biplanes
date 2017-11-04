@@ -42,7 +42,6 @@ Bullets.prototype.shoot = function( x,y, direction, who ) {
       .onComplete.add(function(bullet, tween){
          bullet.kill();
       }, this);
-
   }
 }
 Bullets.prototype.enemyShoot = function( x,y, direction ) {
