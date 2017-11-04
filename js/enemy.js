@@ -52,6 +52,7 @@ Enemy.prototype.stopAI = function () {
 }
 /* This AI logic handler gets re-called every 2 secs to change the ufo direction */
 Enemy.prototype.logicHandler = function() {
+  // @TODO: Unstall enemy
   var plane = this.plane;
   if (plane.flying) {
     /* check if were too low */

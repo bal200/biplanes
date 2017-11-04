@@ -81,7 +81,7 @@ Bullets.prototype.enemyShoot = function( x,y, direction ) {
 /**************************** ITEMS ****************************************************/
 /* Items are sprites that are hittable and land-on-able */
 /* setting visible=false just makes a zone to hit but invisible */
-Items = function(x,y, sprite, group, invisible) {
+Items = function(x,y, sprite, group, invisible, scale) {
   Phaser.Sprite.call(this, game, x, y, sprite);
   //this.animations.add('fly', [1,2,3,4], 10, true);
   this.frame = 0;
@@ -89,7 +89,7 @@ Items = function(x,y, sprite, group, invisible) {
   game.physics.enable(this, Phaser.Physics.ARCADE);
   //this.body.drag = new Phaser.Point(20,20);
   this.anchor.set(0, 0);
-  //this.scale.set(0.5,0.5);
+  if (scale) this.scale.set(scale,scale);
   this.body.allowGravity = false;
   this.body.immovable = true;
   group.add(this);

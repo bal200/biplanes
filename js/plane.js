@@ -10,6 +10,7 @@ Plane = function(x,y, dir) {
   //this.body.drag = new Phaser.Point(20,20);
   this.anchor.set(0.5, 0.5);
   this.scale.set(0.5,0.5);
+  this.body.setSize(50,50,25,25);
   this.body.allowGravity = false;
   this.myReset(dir);
   myGame.planesGroup.add(this); /* group */
@@ -126,13 +127,15 @@ Plane.prototype.checkIfUnStalled = function (){
 Plane.prototype.hitGround = function (ground){
   //var v = this.body.velocity.y;
   var v = Math.abs( this.deltaY );
-  //console.log("v "+v);
-  if (v < CRASH_SPEED/*0.9*/) { /* check were not hitting the ground hard */
-    console.log("hit ground soft");
-    this.land();
-  }else{ /* crash */
-    console.log("hit ground HARD");
-    this.kill();
+  console.log("Touching "+ground.body.touching.up);
+  if (ground.body.touching.up) {
+    if (v < CRASH_SPEED/*0.9*/) { /* check were not hitting the ground hard */
+      this.land(); console.log("hit ground soft");
+    }else{ /* crash */
+      this.kill(); console.log("HIT ground HARD");
+    }
+  }else{ /* if we didnt touch the top of an object, we cant have landed */
+    this.kill(); console.log("HIT an object");
   }
 };
 Plane.prototype.update = function (){

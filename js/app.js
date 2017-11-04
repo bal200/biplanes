@@ -37,6 +37,7 @@ var playState = {
     game.load.spritesheet('plane', 'img/biplane.png', 100, 100);
     game.load.image("background", "img/background.png");
     game.load.image("ground", "img/ground.png");
+    game.load.image("tower", "img/tower.png");
     game.load.spritesheet("bullets", "img/bullet15wh.png", 15,15);
     game.load.spritesheet("boom", "img/explosion96wh.png", 96,96);
     game.load.image("fullscreenbutton", "img/fullscreenbutton.png");
@@ -57,11 +58,13 @@ var playState = {
     game.add.tileSprite(0,0, 1280, 720, 'background');
     game.world.setBounds(-5,-5, game.width+10,game.height+10);
 
-    this.items = game.add.group(); /* hitable game objects, like ground */
-    this.ground = new Items(0,690, 'ground', this.items, /*invisible*/true);    
-
     this.decorations = game.add.group(); /* non-hitable sprites for decoration */
     this.groundDecor = new Decorations(0,670, 'ground', this.decorations);    
+
+    this.items = game.add.group(); /* hitable game objects, like ground */
+    this.ground = new Items(0,690, 'ground', this.items, /*invisible*/true);    
+    this.tower = new Items(600,549, 'tower', this.items, /*invisible*/false, /*scale*/0.75);    
+    this.tower.body.setSize(60,184-33, 20,33);
     
     this.bullets = new Bullets(game.world);
 
@@ -139,19 +142,24 @@ var playState = {
 
       game.physics.arcade.collide(this.planesGroup, this.items, this.planeToItemHandler, null, this);
       
+      game.physics.arcade.collide(this.bullets, this.items, this.bulletstoItemsHandler, null, this);
+      
     //}
 
   },
 
   render: function() {
-    var speed = vectorToPower(this.enemy.plane.body.velocity);
+    var speed = vectorToPower(this.player.plane.body.velocity);
     game.debug.text(game.time.fps+"fps "
     + "Scrn "+game.scale.width.toFixed(0)+","+game.scale.height.toFixed(0)
     //+" cam "+game.camera.x+","+game.camera.y
-    //+" pitchSpeed "+this.enemy.plane.pitchSpeed.toFixed(0)
+    +" pitchSpeed "+this.player.plane.pitchSpeed.toFixed(0)
     +" velocity "+speed.toFixed(0)
-    +" speed "+this.enemy.plane.body.speed.toFixed(0)
+    //+" speed "+this.player.plane.body.speed.toFixed(0)
     , 150, 14, "#00ff00");
+    //game.debug.body(this.player.plane);
+    //game.debug.body(this.enemy.plane);
+    //game.debug.body(this.tower);
   },
 
   fireButtonClick: function() {
@@ -167,7 +175,9 @@ var playState = {
   planeToItemHandler: function(plane, item) {
     plane.hitGround(item);
   },
-
+  bulletstoItemsHandler: function(bullet, item) {
+    bullet.kill();
+  },
   onSizeChange: function() {
     if (this.touchControl) {
       this.touchControl.onSizeChange();
