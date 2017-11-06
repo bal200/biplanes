@@ -12,15 +12,17 @@ Enemy = function(x,y, dir) {
 Enemy.prototype.onKilled = function() {
   this.stopAI();
   game.time.events.add(1500, function() {
-    this.respawnPlane();
-    this.startAI();
+    if (myGame.gameMode==GAME) {
+      this.respawnPlane();
+      this.startAI();
+    }
   }, this);
   myGame.player.scored();
-  //if (myGame.score > highScore) highScore = myGame.score;
 };
 Enemy.prototype.scored = function() {
   this.score++;
   myGame.scoreboard.scored(ENEMY);
+  if (this.score >= 10) myGame.endGame(LOOSE);
 };
 Enemy.prototype.respawnPlane = function() {
   this.plane.revive();
@@ -122,8 +124,6 @@ Enemy.prototype.angleTo = function( a ) {
   }
 };
 
-
-// @TODO
 Enemy.prototype.playerIsInSights = function () {
   var playerAng = this.angleToPlayer();
   if (playerAng==null) return false;

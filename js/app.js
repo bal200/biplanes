@@ -19,11 +19,10 @@ var CRASH_SPEED = 0.9; /* Max Y speed when touching ground for safe landing, any
 
 /**********************************************************/
 var LEFT=1, RIGHT=2;
+var GAME=1, WIN=2, LOOSE=3, TITLE_SCREEN=4; /* Game modes, this.gameMode values */
 /**********************************************************/
 var game = new Phaser.Game(1280, 720, Phaser.CANVAS,'game');
 var myGame;
-
-//var highScore=0;
 
 var playState = {
   preload: function() {
@@ -40,6 +39,9 @@ var playState = {
     game.load.image("tower", "img/tower.png");
     game.load.spritesheet("bullets", "img/bullet15wh.png", 15,15);
     game.load.spritesheet("boom", "img/explosion96wh.png", 96,96);
+
+    game.load.image("titlebacking", "img/titlebacking.png");
+    game.load.spritesheet("buttons", "img/buttons103w47h.png", 103,47);
     game.load.image("fullscreenbutton", "img/fullscreenbutton.png");
 
   },
@@ -81,44 +83,22 @@ var playState = {
     this.cursors = game.input.keyboard.createCursorKeys();
     this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     this.bulletTime=0; /* timer to limit shooting reload speed */
+    this.gameMode=GAME;
 
-
-  },
-  /**********  Start Function  ************************************************/
-  /*****************************************************************************/
-  start: function() {
-
-    this.isStarted = true;
-
-    this.enemys = new Enemys(game.world, /*count*/50);
-
-    /*** Register Touch screen event handlers found in touchcontrols.js ***/
-    //game.input.onDown.add(pointerOnDown, this);
-    //game.input.onUp.add(pointerOnUp, this);
-
-    /* Our touch controls handler. Pick which one to use here! */
-    //this.touchControl = new TouchControl1( this.player ); /* flick the screen controls */
-    if (!game.device.desktop) {
-      this.touchControl = new TouchControl2( this.player, this ); /* joystick */
-    }
-    /* start camera on the player */
-    game.camera.x = this.player.x-(game.width/2); game.camera.y = this.player.y-(game.height/2);
-    /* camera to loosely follow the player */
-    game.camera.follow(this.player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1/*lerp*/);
   },
 
   /**********  Update Function  ************************************************/
   /*****************************************************************************/
   update: function() {
-    //if (this.isStarted) {
-      this.count++;
-      /* Fade in from Black at start of Game */
-      if (this.count==1) game.camera.flash(0x000000, 600, true);
-      if (this.count==150) {
-        this.enemy.startAI();
-        console.log("starting AI");
-      }
+    this.count++;
+    /* Fade in from Black at start of Game */
+    if (this.count==1) game.camera.flash(0x000000, 600, true);
+    if (this.count==150) {
+      this.enemy.startAI();
+      console.log("starting AI");
+    }
 
+    if (this.gameMode==GAME) {
       if (this.cursors.up.isDown) {
         this.player.plane.accelerate(ACCELERATE_SPEED);
       }
@@ -143,9 +123,7 @@ var playState = {
       game.physics.arcade.collide(this.planesGroup, this.items, this.planeToItemHandler, null, this);
       
       game.physics.arcade.collide(this.bullets, this.items, this.bulletstoItemsHandler, null, this);
-      
-    //}
-
+    }
   },
 
   render: function() {
@@ -186,22 +164,28 @@ var playState = {
     if (this.highScoreText)
       this.highScoreText.setTextBounds(0,game.height*0.78, game.width,game.height*0.10);
   },
-  restartGame: function() {
+  endGame: function(result) { /* when someone reaches 10 points, triggers the end screen */
+    if (this.enemy) this.enemy.stopAI();
+    this.gameMode = result /* WIN or LOOSE */
+    game.time.events.add(1700, function() {
+      this.titlePage = new TitlePage(game.world, this.gameMode, myGame);
+    }, this);
+
+  },
+  closeGame: function( toGameMode ) { /* Fade to black and end this game screen */
     game.camera.fade(0x000000, 300);  /* fade to black */
     game.time.events.add(500, function() {
-      /* destroys and respawns a new Game object */
-      game.state.restart();
+      if (toGameMode == GAME) {
+        game.state.restart(); /* destroys and respawns a new Game object */
+      }else if (toGameMode == TITLE_SCREEN) {
+        game.state.start('play');
+      }
     }, this);
   },
   shutdown: function() {
     /* delete all the things! */
-    if (this.touchControl){
-      if (this.touchControl.stick) this.touchControl.stick.destroy();
-      if (this.touchControl.buttonA) this.touchControl.buttonA.destroy();
-      this.touchControl=null;
-      this.count=0;
-    }
-    this.isStarted=false;
+    this.count=0;
+    this.gameMode=0;
   },
   fullScreenButtonPress: function() {
     if (game.scale.isFullScreen)
