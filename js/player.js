@@ -104,20 +104,17 @@ TitlePage.prototype.nextButton = function(x,y, group) {
     myGame.closeGame(GAME);
   }, this,5,5,5) );
   button.anchor.set(0.5,0.5);
-  //button.frame = 5;
 };
 TitlePage.prototype.homeButton = function(x,y, group, green) {
   group.add( button = game.add.button(x,y, 'buttons', function(){
     myGame.closeGame(TITLE_SCREEN);
   }, this,(green ? 0:1),(green ? 0:1),(green ? 0:1)) );
   button.anchor.set(0.5,0.5);
-  //button.frame = (green ? 0:1);
 };
 TitlePage.prototype.restartButton = function(x,y, group, green) {
   group.add( button=game.add.button(x,y, 'buttons', function(){
     myGame.closeGame(TITLE_SCREEN);
   }, this,(green ? 2:3),(green ? 2:3),(green ? 2:3) ) );
   button.anchor.set(0.5,0.5);
-  //button.frame = (green ? 2:3);
 };
 

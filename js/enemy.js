@@ -31,6 +31,7 @@ Enemy.prototype.respawnPlane = function() {
   this.targetDir=this.plane.getAngle();
   this.targetSpeed=0;
 };
+/*----------------------------------------------------------------------------*/
 
 Enemy.prototype.update = function () {
   var plane = this.plane; if (!plane.alive) return;
