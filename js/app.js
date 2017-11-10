@@ -82,7 +82,7 @@ var playState = {
     /**** Register our keyboard buttons ***/
     this.cursors = game.input.keyboard.createCursorKeys();
     this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-    this.bulletTime=0; /* timer to limit shooting reload speed */
+    //this.bulletTime=0; /* timer to limit shooting reload speed */
     this.gameMode=GAME;
 
   },
@@ -94,7 +94,7 @@ var playState = {
     /* Fade in from Black at start of Game */
     if (this.count==1) game.camera.flash(0x000000, 600, true);
     if (this.count==150) {
-      this.enemy.startAI();
+      this.enemy.ai.startAI();
       console.log("starting AI");
     }
 
@@ -114,16 +114,16 @@ var playState = {
       if (this.spacebar.isDown) {
         this.fireButtonClick();
       }
-
-      /* anyone else whos got stuff to run on the Update cycle */
-      this.updateSignal.dispatch(this.count);
-
-      game.physics.arcade.collide(this.planesGroup, this.bullets, this.planeToBulletHandler, null, this);
-
-      game.physics.arcade.collide(this.planesGroup, this.items, this.planeToItemHandler, null, this);
-      
-      game.physics.arcade.collide(this.bullets, this.items, this.bulletstoItemsHandler, null, this);
     }
+    /* anyone else whos got stuff to run on the Update cycle */
+    this.updateSignal.dispatch(this.count);
+
+    game.physics.arcade.collide(this.planesGroup, this.bullets, this.planeToBulletHandler, null, this);
+
+    game.physics.arcade.collide(this.planesGroup, this.items, this.planeToItemHandler, null, this);
+    
+    game.physics.arcade.collide(this.bullets, this.items, this.bulletstoItemsHandler, null, this);
+
   },
 
   render: function() {
@@ -141,10 +141,11 @@ var playState = {
   },
 
   fireButtonClick: function() {
-    if (game.time.now > this.bulletTime  && 
-       this.player.plane.alive && this.player.plane.flying) {
-      this.bullets.shoot(this.player.plane.x, this.player.plane.y, this.player.plane.angle, PLAYER);
-      this.bulletTime = game.time.now + SHOOT_SPEED;
+    var plane = this.player.plane;
+    if (/*game.time.now > this.bulletTime  && */
+       plane.alive && plane.flying) {
+      plane.shoot(plane.x, plane.y, plane.angle, PLAYER);
+      //this.bulletTime = game.time.now + SHOOT_SPEED;
     }
   },
   planeToBulletHandler: function(plane, bullet) {
@@ -165,8 +166,11 @@ var playState = {
       this.highScoreText.setTextBounds(0,game.height*0.78, game.width,game.height*0.10);
   },
   endGame: function(result) { /* when someone reaches 10 points, triggers the end screen */
-    if (this.enemy) this.enemy.stopAI();
+    if (this.enemy) this.enemy.ai.stopAI();
     this.gameMode = result /* WIN or LOOSE */
+    if (result==WIN) this.player.victoryRoll();
+    if (result==LOOSE) this.enemy.victoryRoll();
+
     game.time.events.add(1700, function() {
       this.titlePage = new TitlePage(game.world, this.gameMode, myGame);
     }, this);

@@ -4,17 +4,15 @@ Enemy = function(x,y, dir) {
   this.score=0;
   this.plane = new Plane(x,y, dir);
   this.plane.setParent(this);
-  this.targetDir=0;
-  this.targetSpeed=0;
-  myGame.updateSignal.add(this.update, this); /* we need to recalc each update, so subscribe */
+  this.ai = new AI(this.plane, myGame.player.plane, /*respawn place*/x,y,dir);
   this.bulletTime=0;
 }
 Enemy.prototype.onKilled = function() {
-  this.stopAI();
+  this.ai.stopAI();
   game.time.events.add(1500, function() {
     if (myGame.gameMode==GAME) {
       this.respawnPlane();
-      this.startAI();
+      this.ai.startAI();
     }
   }, this);
   myGame.player.scored();
@@ -28,12 +26,25 @@ Enemy.prototype.respawnPlane = function() {
   this.plane.revive();
   this.plane.x=this.x; this.plane.y=this.y;
   this.plane.myReset(this.dir);
-  this.targetDir=this.plane.getAngle();
-  this.targetSpeed=0;
+  this.ai.targetDir=this.plane.getAngle();
+  this.ai.targetSpeed=0;
 };
-/*----------------------------------------------------------------------------*/
+Enemy.prototype.victoryRoll = function() {
+  //this.ai = new AI(this.plane, null, /*respawn place*/this.x,this.y,this.dir);
+  this.ai.startVictoryAI();
+}
 
-Enemy.prototype.update = function () {
+/*----------------------------------------------------------------------------*/
+AI = function(plane, enemyPlane, /*respawn place*/x,y,dir) {
+  this.x=x; this.y=y; this.dir=dir; /* respawn place, dir=LEFT or RIGHT */
+  this.plane = plane;
+  this.enemyPlane=enemyPlane;
+  //this.parent=enemy;
+  this.targetDir=0;
+  this.targetSpeed=0;
+  myGame.updateSignal.add(this.update, this); /* we need to recalc each update, so subscribe */
+}
+AI.prototype.update = function () {
   var plane = this.plane; if (!plane.alive) return;
   /* Creep towards target angle */
   var angleDiff = Math.abs( this.targetDir - plane.getAngle() );
@@ -45,16 +56,42 @@ Enemy.prototype.update = function () {
   if (plane.engineSpeed > this.targetSpeed) plane.decelerate(ACCELERATE_SPEED);
 
 }
-Enemy.prototype.startAI = function () {
+AI.prototype.startVictoryAI = function () {
+  this.targetSpeed = 300;
+  this.victoryLogicHandler();
+}
+AI.prototype.victoryLogicHandler = function() {
+  var plane = this.plane;
+  if (plane.flying) {
+    /* check if were too low */
+    if (plane.y >550) {
+      this.angleTo(45); /* rise UP to middle screen */
+    }else if (plane.y >400) { /* too low */
+      this.angleTo(60); 
+    }else if (plane.y <350) { /* too high */
+      this.angleTo(120); 
+    }else{ 
+      this.angleTo( 90 ); /* just cruise level */
+      this.targetSpeed = 190;
+    }
+  }else{ /* on the ground */
+    if (vectorToPower(plane.body.velocity) > 220)  this.angleTo(45); /* take off if fast enough */
+  }
+  this.logicTimer=game.time.events.add(/*time*/game.rnd.between(230, 270), function() {
+    this.victoryLogicHandler();
+  }, this);
+}
+
+AI.prototype.startAI = function () {
   this.targetSpeed = 300; /* prepare for take off! */
   this.targetDir = this.plane.angle;
   this.logicHandler();
 }
-Enemy.prototype.stopAI = function () {
+AI.prototype.stopAI = function () {
   game.time.events.remove(this.logicTimer);
 }
 /* This AI logic handler gets re-called every 2 secs to change the ufo direction */
-Enemy.prototype.logicHandler = function() {
+AI.prototype.logicHandler = function() {
   // @TODO: Unstall enemy
   var plane = this.plane;
   if (plane.flying) {
@@ -62,7 +99,7 @@ Enemy.prototype.logicHandler = function() {
     if (plane.y >550)  this.angleTo(45);
     else if (this.canISeePlayer()) {
 
-      if (this.heightDifference() > 100) {/* if player is much higher, ensure enemy dont stall */
+      if (this.heightDifference() > 100) {/* if player is much higher, ensure we dont stall */
         this.angleTo(65);/* UP */
       }else { /* otherwise point towards player */
         this.targetDir = this.angleToPlayer() + game.rnd.between(-10, +10);
@@ -72,7 +109,7 @@ Enemy.prototype.logicHandler = function() {
 
     }
     if (this.playerIsInSights()) {
-      this.shootAtPlayer();
+      this.plane.shoot( /*whoami*/ENEMY );
     }
   }else{ /* on the ground */
     if (vectorToPower(plane.body.velocity) > 220)  this.angleTo(45); /* take off if fast enough */
@@ -81,13 +118,13 @@ Enemy.prototype.logicHandler = function() {
     this.logicHandler();
   }, this);
 }
-Enemy.prototype.heightDifference = function() {
+AI.prototype.heightDifference = function() {
   var player = myGame.player.plane;
   var enemy = this.plane;
   if (!player.alive) return 0;
   return (enemy.y - player.y);
 };
-Enemy.prototype.canISeePlayer = function() {
+AI.prototype.canISeePlayer = function() {
   var playerAng = this.angleToPlayer();
   if (playerAng==null) return false;
   var dist = this.distanceToPlayer();
@@ -102,14 +139,14 @@ Enemy.prototype.canISeePlayer = function() {
   //var whichWay=shortestRouteToAngle(plane.getAngle(), this.targetDir );
   //if ( angleDiff>4 )  plane.rotate(TURN_SPEED * whichWay);
 };
-Enemy.prototype.distanceToPlayer = function() {
-  var player = myGame.player.plane;
+AI.prototype.distanceToPlayer = function() {
+  var player = this.enemyPlane;
   var enemy = this.plane;
   if (!player.alive) return 100000;
   return Phaser.Math.distance(enemy.x,enemy.y, player.x,player.y);
 };
-Enemy.prototype.angleToPlayer = function() {
-  var player = myGame.player.plane;
+AI.prototype.angleToPlayer = function() {
+  var player = this.enemyPlane;
   var enemy = this.plane;
   if (!player.alive) return null;
   var ang = (Phaser.Math.radToDeg(
@@ -117,7 +154,7 @@ Enemy.prototype.angleToPlayer = function() {
   return fixAngle( ang );
 
 };
-Enemy.prototype.angleTo = function( a ) {
+AI.prototype.angleTo = function( a ) {
   if (this.plane.getAngle() >= 180) {  /* Facing LEFT */
     this.targetDir = 360 - a;
   }else {  /* Facing RIGHT */
@@ -125,7 +162,7 @@ Enemy.prototype.angleTo = function( a ) {
   }
 };
 
-Enemy.prototype.playerIsInSights = function () {
+AI.prototype.playerIsInSights = function () {
   var playerAng = this.angleToPlayer();
   if (playerAng==null) return false;
   var dist = this.distanceToPlayer();
@@ -139,7 +176,7 @@ Enemy.prototype.playerIsInSights = function () {
   }
   return false;
 };
-Enemy.prototype.shootAtPlayer = function () {
+AI.prototype.shootAtPlayer = function () {
   if (game.time.now > this.bulletTime) {
     myGame.bullets.shoot(this.plane.x, this.plane.y, this.plane.getAngle(), ENEMY);
     this.bulletTime = game.time.now + SHOOT_SPEED;

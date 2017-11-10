@@ -4,6 +4,7 @@ Player = function(x,y, dir) {
   this.score=0;
   this.plane = new Plane(x,y, dir);
   this.plane.setParent(this);
+  this.ai = null; /* were human, so no AI needed to control plane */
 }
 /* called when your plane died, to update score and respawn */
 Player.prototype.onKilled = function() {
@@ -26,12 +27,15 @@ Player.prototype.respawnPlane = function() {
   this.plane.myReset(this.dir);
 };
 
+Player.prototype.victoryRoll = function() {
+  this.ai = new AI(this.plane, null, /*respawn place*/this.x,this.y,this.dir);
+  this.ai.startVictoryAI();
 
-
+}
 
 
 function playerToEnemyHandler(player, enemy) {
-  /* Do nothing for now.  The physics engine will bounce them for now */
+  /* Do nothing for now. */
 }
 
 /***************************************************************************************/

@@ -16,6 +16,7 @@ Plane = function(x,y, dir) {
   myGame.planesGroup.add(this); /* group */
   myGame.updateSignal.add(this.update, this); /* we need to recalc each update, so subscribe */
   this.events.onKilled.add(this.onKilled ,this);
+  this.bulletTime=0;
 };
 Plane.prototype = Object.create(Phaser.Sprite.prototype);
 Plane.prototype.constructor = Plane;
@@ -33,6 +34,7 @@ Plane.prototype.myReset = function (dir){
   this.flying = false; /* if in the air or on the ground */
   this.body.velocity.setTo(0,0);
 };
+
 /****************************************************************************************/
 
 /* amount of acceleration to add in pixels per sec, per sec */
@@ -124,6 +126,12 @@ Plane.prototype.checkIfUnStalled = function (){
     }
   }
 };
+Plane.prototype.shoot = function ( who ) {
+  if (game.time.now > this.bulletTime) {
+    myGame.bullets.shoot(this.x, this.y, this.getAngle(), who);
+    this.bulletTime = game.time.now + SHOOT_SPEED;
+  }
+};
 Plane.prototype.hitGround = function (ground){
   //var v = this.body.velocity.y;
   var v = Math.abs( this.deltaY );
@@ -165,6 +173,38 @@ Plane.prototype.planeToBulletHandler = function(bullet){
   //}
 }
 
+/* Take over control at the end of the game */
+Plane.prototype.victory = function(){
+  //this.targetDir = this.plane.angle;
+  this.victoryLogicHandler();
+}
+Plane.prototype.victoryLogicHandler = function() {
+  // @TODO: Unstall enemy
+  var plane = this.plane;
+  if (plane.flying) {
+    /* check if were too low */
+    if (plane.y >550)  this.angleTo(45);
+    else if (this.canISeePlayer()) {
+
+      if (this.heightDifference() > 100) {/* if player is much higher, ensure enemy dont stall */
+        this.angleTo(65);/* UP */
+      }else { /* otherwise point towards player */
+        this.targetDir = this.angleToPlayer() + game.rnd.between(-10, +10);
+      }
+    }else{ /* can't see player */
+      this.angleTo(90); /* just cruise level for now */
+
+    }
+    if (this.playerIsInSights()) {
+      this.shootAtPlayer();
+    }
+  }else{ /* on the ground */
+    if (vectorToPower(plane.body.velocity) > 220)  this.angleTo(45); /* take off if fast enough */
+  }
+  this.logicTimer=game.time.events.add(/*time*/game.rnd.between(230, 270), function() {
+    this.logicHandler();
+  }, this);
+}
 
 /*** NOT USED  */
 Plane.prototype.flyStart = function () {
