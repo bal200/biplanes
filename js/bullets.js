@@ -29,7 +29,7 @@ Bullets.prototype.shoot = function( x,y, direction, who ) {
   var bullet = this.getFirstExists(false);
   if (bullet) {
     var vec = angleToVector( direction );
-    bullet.reset(x + (vec.x*60), y + (vec.y*60));
+    bullet.reset(x + (vec.x*40), y + (vec.y*40));
     var power = BULLET_SPEED;
     bullet.whos = who;
     bullet.alpha = 1.0;

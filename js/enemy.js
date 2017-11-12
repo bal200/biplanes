@@ -96,7 +96,7 @@ AI.prototype.logicHandler = function() {
   var plane = this.plane;
   if (plane.flying) {
     /* check if were too low */
-    if (plane.y >550)  this.angleTo(45);
+    if (plane.y >540)  this.angleTo(45);
     else if (this.canISeePlayer()) {
 
       if (this.heightDifference() > 100) {/* if player is much higher, ensure we dont stall */
@@ -112,7 +112,7 @@ AI.prototype.logicHandler = function() {
       this.plane.shoot( /*whoami*/ENEMY );
     }
   }else{ /* on the ground */
-    if (vectorToPower(plane.body.velocity) > 220)  this.angleTo(45); /* take off if fast enough */
+    if (vectorToPower(plane.body.velocity) > 230)  this.angleTo(45); /* take off if fast enough */
   }
   this.logicTimer=game.time.events.add(/*time*/game.rnd.between(230, 270), function() {
     this.logicHandler();

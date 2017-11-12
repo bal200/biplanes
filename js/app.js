@@ -202,9 +202,10 @@ var playState = {
 
 /**************** Add the States and start ************************************/
 game.state.add('play', playState);
+game.state.add('menu', menuState);
 
 game.device.whenReady(function() {
-  game.state.start('play');
+  game.state.start('menu');
 });
 
 /************** VECTOR LIBRARY STUFF *********************************************/
