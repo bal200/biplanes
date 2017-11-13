@@ -34,7 +34,7 @@ var playState = {
     game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
     game.load.spritesheet('plane', 'img/biplane.png', 100, 100);
-    game.load.image("background", "img/background.png");
+    game.load.image("background", "img/background720h.png");
     game.load.image("ground", "img/ground.png");
     game.load.image("tower", "img/tower.png");
     game.load.spritesheet("bullets", "img/bullet15wh.png", 15,15);
@@ -182,7 +182,7 @@ var playState = {
       if (toGameMode == GAME) {
         game.state.restart(); /* destroys and respawns a new Game object */
       }else if (toGameMode == TITLE_SCREEN) {
-        game.state.start('play');
+        game.state.start('menu');
       }
     }, this);
   },

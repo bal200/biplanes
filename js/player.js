@@ -42,7 +42,7 @@ function playerToEnemyHandler(player, enemy) {
 /* Manages the score text at the top. params: left player, right player, display group */
 Scoreboard = function( left, right, group ) {
   this.left=left; this.right=right; 
-  var style = { font: "40px Courier New", fill: "#FFFFFF", 
+  var style = { font: "48px Courier New", fill: "#FFFFFF", 
     /*boundsAlignH: "left",*/ boundsAlignV: "top",
     /*fontWeight: "bold"*/
   };
