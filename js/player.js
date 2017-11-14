@@ -42,7 +42,7 @@ function playerToEnemyHandler(player, enemy) {
 /* Manages the score text at the top. params: left player, right player, display group */
 Scoreboard = function( left, right, group ) {
   this.left=left; this.right=right; 
-  var style = { font: "48px Courier New", fill: "#FFFFFF", 
+  var style = { font: "52px Courier New", fill: "#FFFFFF", 
     /*boundsAlignH: "left",*/ boundsAlignV: "top",
     /*fontWeight: "bold"*/
   };
@@ -50,12 +50,12 @@ Scoreboard = function( left, right, group ) {
   this.leftText = game.add.text(0, 0, "0", style);
   //this.leftText.setStyle({boundsAlignH: "left"});
   this.leftText.setTextBounds(15, 15, game.width-(15*2), 100);
-  this.leftText.setShadow(1, 1, 'rgba(0,0,0, 0.8)', 0);
+  this.leftText.setShadow(1, 1, 'rgba(0,0,0, 0.9)', 0);
 
   this.rightText = game.add.text(0, 0, "0", style);
   this.rightText.boundsAlignH="right";
   this.rightText.setTextBounds(15, 15, game.width-(15*2), 100);
-  this.rightText.setShadow(1, 1, 'rgba(0,0,0, 0.8)', 0);
+  this.rightText.setShadow(1, 1, 'rgba(0,0,0, 0.9)', 0);
 
 }
 /* called when your plane died, to update score and respawn */

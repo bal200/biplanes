@@ -9,7 +9,7 @@ Plane = function(x,y, dir) {
   /* make the ship naturally slow to a stop if left */
   //this.body.drag = new Phaser.Point(20,20);
   this.anchor.set(0.5, 0.5);
-  this.scale.set(0.5,0.5);
+  this.scale.set(0.55,0.55);
   this.body.setSize(50,50,25,25);
   this.body.allowGravity = false;
   this.myReset(dir);

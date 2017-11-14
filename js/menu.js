@@ -13,6 +13,8 @@ var menuState = {
     game.load.image("pilot", "img/aviator125w.png");
     game.load.image("sky", "img/sky720h.jpg");
     game.load.spritesheet("buttons", "img/buttons103w47h.png", 103,47);
+    game.load.spritesheet("smoke", "img/smoke200wh.png", 200,200);
+   
 
   },
   create: function() {
@@ -31,6 +33,8 @@ var menuState = {
     this.plane = game.add.sprite(0,0, 'biplane');
     this.plane.anchor.set(0.5, 0.5); //this.scale.set(0.5,0.5);
     this.planeGroup.add(this.plane);
+
+    this.inTheClouds = new InTheClouds( game.world );
 
     startButton=game.add.button(game.width/2, game.height*0.85, 'buttons', function(){
       this.closeMenu(GAME);
@@ -52,6 +56,10 @@ var menuState = {
     if (this.count==1) game.camera.flash(0x000000, 600, true);
 
     this.combineWobbles();
+
+    if (game.rnd.between(0,200)==1) {
+      this.inTheClouds.createClouds( game.rnd.between(2,4) );
+    }
 
     if (this.gameMode==GAME) {
       if (this.cursors.up.isDown) {
@@ -108,7 +116,7 @@ var menuState = {
   },
 };
 
-
+/**************************************************************************************/
 Wobble = function( range, duration, frequency ) {
   this.x=0; this.y=0;
   this.range = range;
@@ -116,21 +124,7 @@ Wobble = function( range, duration, frequency ) {
   this.frequency = frequency;
 
   this.logic();
-  //this.plane.x += ((this.target.x - this.plane.x) * 0.02);
-  //this.plane.y += ((this.target.y - this.plane.y) * 0.02);
-  //if (game.rnd.between(0,20) == 1) { /* Random time */
-  // var x = this.plane.x + game.rnd.between(-20,20);
-  // var y = this.plane.y + game.rnd.between(-20,20);
-  // var duration = game.rnd.between(1000,2500);
-  // game.add.tween(this.plane).to({x:x, y:y}, /*duration*/duration,
-  //   Phaser.Easing.Back.InOut , /*autostart*/true, /*delay*/0, 
-  //   /*repeat*/0, /*yoyo*/false);
-  // //}
-  // this.logicTimer=game.time.events.add(/*time*/game.rnd.between(duration, duration+500), function() {
-  //   this.planeWobble();
-  // }, this);
 };
-
 Wobble.prototype.logic = function() {
   var x = game.rnd.between(-this.range,this.range);
   var y = game.rnd.between(-this.range,this.range);
@@ -151,3 +145,85 @@ Wobble.prototype.stopLogic = function() {
   game.time.events.remove( this.logicTimer );
 };
 
+
+/**************************************************************************************/
+var InTheClouds = function ( group ) {
+  Phaser.Group.call(this, game); /* create a Group, the parent Class */
+  
+  this.createMultiple(20, 'smoke'/*sprite sheet*/);
+  group.add( this );
+  this.forEach(function(cld) {
+    cld.anchor.set(0.5, 0.5);
+  });
+
+};
+InTheClouds.prototype = Object.create(Phaser.Group.prototype);
+InTheClouds.prototype.constructor = InTheClouds;
+
+/* create a big explosion graphic */
+InTheClouds.prototype.createClouds = function ( count ) {
+  var cld, cloudSize = game.height*2.4;
+  var cloudScale = cloudSize/200;
+  var alpha = game.rnd.realInRange(0.1, 0.3)
+  for (var n=0, dist=0; n<count; n++, dist+=110) {
+    if (cld=this.getFirstExists(false)) {
+      cld.reset(game.width + cloudSize/2, game.height/2);
+      cld.anchor.set(0.5,0.5);
+      cld.frame = game.rnd.between(1,5);
+      cld.alpha=alpha;
+      cld.scale.set(cloudScale, cloudScale);
+      dist += (game.rnd.between(1,3)==1 ? 90 : 0);
+      game.add.tween(cld).to({x: -(cloudSize/2)}, /*duration*/300, Phaser.Easing.Linear.None,
+        /*autostart*/true, /*delay*/dist, /*repeat*/0, /*yoyo*/false)
+        .onComplete.add(function(cld, tween){
+          cld.kill();
+        });
+
+    }
+  }
+
+};
+
+/**************************************************************************************/
+var Clouds = function ( group ) {
+  Phaser.Group.call(this, game); /* create a Group, the parent Class */
+  
+  this.createMultiple(5, 'cloud'/*sprite sheet*/);
+  group.add( this );
+  this.forEach(function(cld) {
+    cld.anchor.set(0.5, 0.5);
+  });
+
+};
+Clouds.prototype = Object.create(Phaser.Group.prototype);
+Clouds.prototype.constructor = Clouds;
+
+/* create a big explosion graphic */
+Clouds.prototype.createClouds = function ( count ) {
+  var cld;
+  var level=1;
+  for (var n=0; n<10; n++) { /* Level 1 */
+    cloudScale = 1.0;
+    if (cld=this.getFirstExists(false)) {
+      cld.reset(game.rnd.between(0,game.width), game.rnd.between(0,game.height));
+      cld.anchor.set(0.5,0.5);
+      cld.frame = game.rnd.between(1,2);
+      cld.alpha=0.9;
+      cld.scale.set(cloudScale, cloudScale);
+      dist += (game.rnd.between(1,3)==1 ? 90 : 0);
+      game.add.tween(cld).to({x: -(cloudSize/2)}, /*duration*/300, Phaser.Easing.Linear.None,
+        /*autostart*/true, /*delay*/dist, /*repeat*/0, /*yoyo*/false)
+        .onComplete.add(function(cld, tween){
+          cld.kill();
+        });
+
+    }
+  }
+
+};
+
+Clouds.prototype.update = function () {
+  this.forEach(function(cld) {
+    
+  });
+};
