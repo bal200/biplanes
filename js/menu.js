@@ -25,7 +25,8 @@ var menuState = {
     //game.world.setBounds(-5,-5, game.width+10,game.height+10);
 
     this.clouds = new Clouds( game.world );
-    this.clouds.createClouds( 15 );
+    this.clouds.menuClouds( 8, /*near*/1 );
+    this.clouds.menuClouds( 8, /*far*/2 );
 
     this.ribbon = game.add.sprite(game.width/2, game.height/2, 'ribbon');
     this.ribbon.anchor.set(0.5, 0.5); this.ribbon.scale.set(0.85,0.85);
@@ -182,37 +183,49 @@ var Clouds = function ( group ) {
   game.physics.enable(this, Phaser.Physics.ARCADE);
   this.forEach(function(cld) {
     cld.anchor.set(0.5, 0.5);
+    cld.body.allowGravity = false;
   });
 
 };
 Clouds.prototype = Object.create(Phaser.Group.prototype);
 Clouds.prototype.constructor = Clouds;
 
-/* create a big explosion graphic */
-Clouds.prototype.createClouds = function ( count ) {
-  var cld, lev;
+Clouds.prototype.menuClouds = function ( count, level ) {
   for (var n=0; n<count; n++) { 
-    lev = game.rnd.between(1,2); /* lev 1: near+large+fast. lev 2: far+small+slow */
-    cloudScale = (lev==1 ? 2.0 : 1.0);
-    cloudSpeed = (lev==1 ? 30 : 10);
-    if (cld=this.getFirstExists(false)) {
-      cld.reset(game.rnd.between(0,game.width), game.rnd.between(0,game.height));
-      cld.anchor.set(0.5,0.5);
-      cld.frame = game.rnd.between(1,5);
-      cld.alpha=0.9;
-      cld.angle=game.rnd.between(0, 360);
-      cld.scale.set(cloudScale, cloudScale);
-      cld.body.velocity = new Phaser.Point(-cloudSpeed, 0);
-
-    }
+    //lev = game.rnd.between(1,2);
+    /* lev 1: near+large+fast. lev 2: far+small+slow */
+    cloudScale = (level==1 ? 2.0 : 1.0);
+    cloudSpeed = (level==1 ? 30 : 10);
+    this.createCloud(-100,0,game.width+200,game.height, cloudScale, cloudSpeed, 1,5);
   }
-
 };
-
+Clouds.prototype.gameClouds = function ( count, level ) {
+  var cld;
+  for (var n=0; n<count; n++) { 
+    /* lev 1: near+large+fast. lev 2: far+small+slow */
+    cloudScale = (level==1 ? 0.7 : 0.7);
+    cloudSpeed = (level==1 ? 7 : 4);
+    cld=this.createCloud(-100, 50, game.width+200, 150, cloudScale, cloudSpeed, 6,7);
+    cld.angle=0;
+  }
+};
+Clouds.prototype.createCloud = function ( x,y, x2,y2, cloudScale, cloudSpeed, fr1,fr2 ) {
+  var cld;
+  if (cld=this.getFirstExists(false)) {
+    cld.reset(game.rnd.between(x,x2), game.rnd.between(y,y2));
+    cld.anchor.set(0.5,0.5);
+    cld.frame = game.rnd.between(fr1,fr2);
+    cld.alpha=1; //0.9;
+    cld.angle=game.rnd.between(0, 360);
+    cld.scale.set(cloudScale, cloudScale);
+    cld.body.velocity = new Phaser.Point(-cloudSpeed, 0);
+    return cld;
+  }
+};
 Clouds.prototype.update = function () {
   this.forEach(function(cld) {
-    if (cld.x < -200) {cld.x = game.width+200; cld.y=game.rnd.between(0,game.height);}
-    if (cld.x > game.width+200) {cld.x = -200; cld.y=game.rnd.between(0,game.height);}
+    if (cld.x < -150) {cld.x = game.width+150; /*cld.y=game.rnd.between(0,game.height);*/}
+  if (cld.x > game.width+150) {cld.x = -150; /*cld.y=game.rnd.between(0,game.height);*/}
   });
 
 };

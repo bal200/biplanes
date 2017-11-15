@@ -75,6 +75,10 @@ var playState = {
     this.enemy = new Enemy(50, 665, RIGHT);
 
     this.explosions = new Explosions(game.world);
+    
+    this.clouds = new Clouds(game.world);
+    this.clouds.gameClouds( 3, 1);
+    this.clouds.gameClouds( 3, 2);
 
     this.fullScreenButton = game.add.button(3,3, 'fullscreenbutton', this.fullScreenButtonPress, this,0,0,0);    
     this.scoreboard= new Scoreboard( this.enemy, this.player, game.world );
