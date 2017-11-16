@@ -11,6 +11,7 @@ var menuState = {
     game.load.image("fullscreenbutton", "img/fullscreenbutton.png");
     game.load.image("ribbon", "img/ribbon700w.png");
     game.load.image("biplane", "img/biplane550w.png");
+    game.load.spritesheet("prop", "img/prop17w234h.png", 17,234);
     game.load.image("pilot", "img/aviator125w.png");
     game.load.image("sky", "img/sky720h.jpg");
     game.load.spritesheet("buttons", "img/buttons103w47h.png", 103,47);
@@ -31,11 +32,16 @@ var menuState = {
     this.ribbon = game.add.sprite(game.width/2, game.height/2, 'ribbon');
     this.ribbon.anchor.set(0.5, 0.5); this.ribbon.scale.set(0.85,0.85);
 
-    this.planeGroup = game.add.group(); //this.planeGroup.anchor.set(0.5, 0.5);
+    this.planeGroup = game.add.group();
     this.planeGroup.x=game.width/2; this.planeGroup.y=game.height/2;
     this.plane = game.add.sprite(0,0, 'biplane');
-    this.plane.anchor.set(0.5, 0.5); //this.scale.set(0.5,0.5);
+    this.plane.anchor.set(0.5, 0.5); 
     this.planeGroup.add(this.plane);
+    this.prop = game.add.sprite(272,-4, 'prop');
+    this.prop.anchor.set(0.5, 0.5); 
+    this.prop.animations.add('spin', [0,1], 60, true);
+    this.prop.animations.play('spin');
+    this.plane.addChild(this.prop);
 
     this.inTheClouds = new InTheClouds( game.world );
 
