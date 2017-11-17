@@ -112,7 +112,7 @@ AI.prototype.logicHandler = function() {
       this.plane.shoot( /*whoami*/ENEMY );
     }
   }else{ /* on the ground */
-    if (vectorToPower(plane.body.velocity) > 230)  this.angleTo(45); /* take off if fast enough */
+    if (vectorToPower(plane.body.velocity) > 250)  this.angleTo(50); /* take off if fast enough */
   }
   this.logicTimer=game.time.events.add(/*time*/game.rnd.between(230, 270), function() {
     this.logicHandler();

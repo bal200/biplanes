@@ -89,13 +89,13 @@ TitlePage = function( parentGroup, type, myGame ) {
   this.group.add( this.backing = game.add.sprite(0,0, 'titlebacking') );
   this.backing.anchor.set(0.5,0.5);
   if (type==WIN) {
-    this.nextButton(120,90,this.group);
+    //this.nextButton(120,90,this.group);
     this.homeButton(0,90,this.group, /*green*/true);
     var text="You Win!";
   }
   if (type==LOOSE) {
-    this.restartButton(0,90,this.group, /*green*/true);
-    this.homeButton(-120,90,this.group, /*green*/true);
+    this.restartButton(+80,90,this.group, /*green*/true);
+    this.homeButton(-80,90,this.group, /*green*/true);
     var text="Computer wins";
   }
   var scoretitle = game.add.text(0,0, myGame.enemy.score+" - "+myGame.player.score,
@@ -111,7 +111,7 @@ TitlePage = function( parentGroup, type, myGame ) {
   this.group.add(texttitle);
 
   this.group.alpha = 0;
-  game.add.tween(this.group).to({alpha: 1.00}, /*duration*/150,
+  game.add.tween(this.group).to({alpha: 1.00}, /*duration*/300,
            Phaser.Easing.Linear.None, /*autostart*/true, /*delay*/0, /*repeat*/0, /*yoyo*/false);
 };
 
@@ -129,7 +129,7 @@ TitlePage.prototype.homeButton = function(x,y, group, green) {
 };
 TitlePage.prototype.restartButton = function(x,y, group, green) {
   group.add( button=game.add.button(x,y, 'buttons', function(){
-    myGame.closeGame(TITLE_SCREEN);
+    myGame.closeGame(GAME);
   }, this,(green ? 2:3),(green ? 2:3),(green ? 2:3) ) );
   button.anchor.set(0.5,0.5);
 };
