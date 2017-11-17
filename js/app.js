@@ -23,6 +23,7 @@ var GAME=1, WIN=2, LOOSE=3, TITLE_SCREEN=4; /* Game modes, this.gameMode values 
 /**********************************************************/
 var game = new Phaser.Game(1280, 720, Phaser.CANVAS,'game');
 var myGame;
+var learning = new Learning();
 
 var playState = {
   preload: function() {
@@ -42,7 +43,7 @@ var playState = {
 
     game.load.image("titlebacking", "img/titlebacking.png");
     game.load.spritesheet("buttons", "img/buttons103w47h.png", 103,47);
-    game.load.image("fullscreenbutton", "img/fullscreenbutton.png");
+    game.load.image("instructions", "img/instructions.png");
 
   },
   /**********  Create Function  ************************************************/
@@ -75,12 +76,12 @@ var playState = {
     this.enemy = new Enemy(50, 665, RIGHT);
 
     this.explosions = new Explosions(game.world);
-    
+
     this.clouds = new Clouds(game.world);
     this.clouds.gameClouds( 3, 1);
     this.clouds.gameClouds( 3, 2);
 
-    this.fullScreenButton = game.add.button(3,3, 'fullscreenbutton', this.fullScreenButtonPress, this,0,0,0);    
+    this.fullScreenButton=game.add.button(3,-8, 'buttons', this.fullScreenButtonPress, this,6,6,6);    
     this.scoreboard= new Scoreboard( this.enemy, this.player, game.world );
 
     /**** Register our keyboard buttons ***/
@@ -88,6 +89,8 @@ var playState = {
     this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     //this.bulletTime=0; /* timer to limit shooting reload speed */
     this.gameMode=GAME;
+
+    learning.create();
 
   },
 
@@ -212,46 +215,6 @@ game.device.whenReady(function() {
   game.state.start('menu');
 });
 
-/************** VECTOR LIBRARY STUFF *********************************************/
-function newVector( power, angle ){
-  var vec = new Phaser.Point(0,-1 * power);
-  vec = vec.rotate(0,0, angle, true);
-  return vec;
-}
-/* convert an angle (degrees) into a vector.  Assumes 0 degrees is pointing up */
-function angleToVector( angle ) {
-  var vec = new Phaser.Point(0,-1);
-  vec = vec.rotate(0,0, angle, true);
-  return vec;
-}
-/* convert a Vector to an Angle (degrees). the vector doesnt have to be normalised */
-function vectorToAngle( x,y ) {
-  ang = (Phaser.Math.radToDeg(
-            Phaser.Math.angleBetween(0,0, x,y /*vec.x, vec.y*/) )) + 90;
-  if (ang<0) ang+=360;
-  return ang;
-}
-/* Work out the power of a vector, ignoring its direction */
-function vectorToPower( vec ) {
-  return (new Phaser.Point(0,0)).distance(vec);
-}
-/* The Squared function, or x to the power of 2, but also keeps the sign */
-function squared( n ) {
-  return (n>=0) ? n*n : -(n*n);
-}
-/* correct an angle so its within our 0-360 range */
-function fixAngle( a ) {
-  if (a<0) return a+360;
-  if (a>360) return a-360;
-  return a;
-}
-/* Get the direction we need to turn for angle A to meet angle B */
-/* returns either +1 or -1, to indicate the direction */
-function shortestRouteToAngle( a, b ) {
-  if (b<a) b += 360;  /* first put B above A */
-  if ((b - a) < 180) return +1;  /* if going forwards is less than 180, then forwards is closest */
-  return -1;  /* if above is false, it can only be backwards */
-}
 
 /****** OO ******/
 if (typeof Object.create !== 'function') {

@@ -78,39 +78,3 @@ Bullets.prototype.enemyShoot = function( x,y, direction ) {
 //  bullet.kill();
 //}
 
-/**************************** ITEMS ****************************************************/
-/* Items are sprites that are hittable and land-on-able */
-/* setting visible=false just makes a zone to hit but invisible */
-Items = function(x,y, sprite, group, invisible, scale) {
-  Phaser.Sprite.call(this, game, x, y, sprite);
-  //this.animations.add('fly', [1,2,3,4], 10, true);
-  this.frame = 0;
-  if (invisible) this.visible=false;
-  game.physics.enable(this, Phaser.Physics.ARCADE);
-  //this.body.drag = new Phaser.Point(20,20);
-  this.anchor.set(0, 0);
-  if (scale) this.scale.set(scale,scale);
-  this.body.allowGravity = false;
-  this.body.immovable = true;
-  group.add(this);
-
-};
-Items.prototype = Object.create(Phaser.Sprite.prototype);
-Items.prototype.constructor = Items;
-
-/* Decorations are sprites that can't be hit */
-Decorations = function(x,y, sprite, group) {
-  Phaser.Sprite.call(this, game, x, y, sprite);
-  //this.animations.add('fly', [1,2,3,4], 10, true);
-  this.frame = 0;
-
-  game.physics.enable(this, Phaser.Physics.ARCADE);
-  //this.body.drag = new Phaser.Point(20,20);
-  this.anchor.set(0, 0);
-  //this.scale.set(0.5,0.5);
-  this.body.allowGravity = false;
-  group.add(this);
-
-};
-Decorations.prototype = Object.create(Phaser.Sprite.prototype);
-Decorations.prototype.constructor = Decorations;

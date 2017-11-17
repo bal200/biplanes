@@ -8,7 +8,6 @@ var menuState = {
     /* if the full screen button is pressed, use this scale mode: */
     game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
-    game.load.image("fullscreenbutton", "img/fullscreenbutton.png");
     game.load.image("ribbon", "img/ribbon700w.png");
     game.load.image("biplane", "img/biplane550w.png");
     game.load.spritesheet("prop", "img/prop17w234h.png", 17,234);
@@ -37,7 +36,7 @@ var menuState = {
     this.plane = game.add.sprite(0,0, 'biplane');
     this.plane.anchor.set(0.5, 0.5); 
     this.planeGroup.add(this.plane);
-    this.prop = game.add.sprite(272,-4, 'prop');
+    this.prop = game.add.sprite(271,-4, 'prop');
     this.prop.anchor.set(0.5, 0.5); 
     this.prop.animations.add('spin', [0,1], 60, true);
     this.prop.animations.play('spin');
@@ -58,7 +57,7 @@ var menuState = {
 
     this.combineWobbles();
 
-    this.fullScreenButton = game.add.button(3,3, 'fullscreenbutton', this.fullScreenButtonPress, this,0,0,0);    
+    this.fullScreenButton=game.add.button(3,-8, 'buttons', this.fullScreenButtonPress, this,6,6,6);    
   },
   update: function() {
     this.count++;
