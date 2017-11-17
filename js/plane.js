@@ -1,17 +1,16 @@
 
 /* The Plane object
  * An extension of the sprite class */
-Plane = function(x,y, dir) {
+Plane = function(x,y, dir, startFrame) {
   Phaser.Sprite.call(this, game, x, y, 'plane');
   //this.animations.add('fly', [1,2,3,4], 10, true);
 
   game.physics.enable(this, Phaser.Physics.ARCADE);
-  /* make the ship naturally slow to a stop if left */
-  //this.body.drag = new Phaser.Point(20,20);
   this.anchor.set(0.5, 0.5);
   this.scale.set(0.55,0.55);
   this.body.setSize(50,50,25,25);
   this.body.allowGravity = false;
+  this.startFrame=startFrame;
   this.myReset(dir);
   myGame.planesGroup.add(this); /* group */
   myGame.updateSignal.add(this.update, this); /* we need to recalc each update, so subscribe */
@@ -25,7 +24,7 @@ Plane.prototype.setParent=function(p){ this.myParent=p; }
 Plane.prototype.myReset = function (dir){ 
   //this.frame = 0;
   this.direction=dir; /* which way the planes pointing */
-  this.frame = (this.direction==LEFT ? 0 : 1);
+  this.frame = (this.direction==LEFT ? this.startFrame+0 : this.startFrame+1);
   this.angle = (this.direction==LEFT ? 270 : 90); /* 0 points the plane straight up */
   this.engineSpeed = 0; /* these 2 speed figures are combined for actual speed */
   this.pitchSpeed = 0;  /* engineSpeed set by user, pitchSpeed set from climbing or goning down */

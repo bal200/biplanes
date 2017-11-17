@@ -38,7 +38,7 @@ var menuState = {
     this.planeGroup.add(this.plane);
     this.prop = game.add.sprite(271,-4, 'prop');
     this.prop.anchor.set(0.5, 0.5); 
-    this.prop.animations.add('spin', [0,1], 60, true);
+    this.prop.animations.add('spin', [0,1,3], 60, true);
     this.prop.animations.play('spin');
     this.plane.addChild(this.prop);
 

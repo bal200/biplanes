@@ -3,7 +3,8 @@
  *****
  *****
  */
-
+/* Blue plane: #2889e4, #1f7bd1, wing: #215fab
+  Red Plane:   #db2937, #b41a28, wing: #930913 */
 /*****************************************************************/
 var PLAYER=1, ENEMY=2;
 /******** GAME CALIBRATION VARIABLES ********/
@@ -72,8 +73,8 @@ var playState = {
     this.bullets = new Bullets(game.world);
 
     this.planesGroup = game.add.group();
-    this.player = new Player(1210, 665, LEFT);
-    this.enemy = new Enemy(50, 665, RIGHT);
+    this.player = new Player(1210, 676/*665*/, LEFT, /*sprite color*/0);
+    this.enemy = new Enemy(50, 676, RIGHT, /*sprite color*/2);
 
     this.explosions = new Explosions(game.world);
 
@@ -134,14 +135,15 @@ var playState = {
   },
 
   render: function() {
-    var speed = vectorToPower(this.player.plane.body.velocity);
-    game.debug.text(game.time.fps+"fps "
-    + "Scrn "+game.scale.width.toFixed(0)+","+game.scale.height.toFixed(0)
+    //var speed = vectorToPower(this.player.plane.body.velocity);
+    //game.debug.text(game.time.fps+"fps "
+    //+ "Scrn "+game.scale.width.toFixed(0)+","+game.scale.height.toFixed(0)
     //+" cam "+game.camera.x+","+game.camera.y
-    +" pitchSpeed "+this.player.plane.pitchSpeed.toFixed(0)
-    +" velocity "+speed.toFixed(0)
+    //+" plane "+this.player.plane.x.toFixed(0)+","+this.player.plane.y.toFixed(0)
+    //+" pitchSpeed "+this.player.plane.pitchSpeed.toFixed(0)
+    //+" velocity "+speed.toFixed(0)
     //+" speed "+this.player.plane.body.speed.toFixed(0)
-    , 150, 14, "#00ff00");
+    //, 150, 14, "#00ff00");
     //game.debug.body(this.player.plane);
     //game.debug.body(this.enemy.plane);
     //game.debug.body(this.tower);

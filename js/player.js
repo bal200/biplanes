@@ -1,8 +1,8 @@
 
-Player = function(x,y, dir) {
+Player = function(x,y, dir, startFrame) {
   this.x=x; this.y=y; this.dir=dir;
   this.score=0;
-  this.plane = new Plane(x,y, dir);
+  this.plane = new Plane(x,y, dir, startFrame);
   this.plane.setParent(this);
   this.ai = null; /* were human, so no AI needed to control plane */
 }
@@ -18,7 +18,7 @@ Player.prototype.onKilled = function() {
 Player.prototype.scored = function() {
   this.score++;
   myGame.scoreboard.scored(PLAYER);
-  if (this.score >= 10) myGame.endGame(WIN);
+  if (this.score >= 7) myGame.endGame(WIN);
 };
 
 Player.prototype.respawnPlane = function() {

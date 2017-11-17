@@ -1,8 +1,8 @@
 
-Enemy = function(x,y, dir) {
+Enemy = function(x,y, dir, startFrame) {
   this.x=x; this.y=y; this.dir=dir; /* respawn place, dir=LEFT or RIGHT */
   this.score=0;
-  this.plane = new Plane(x,y, dir);
+  this.plane = new Plane(x,y, dir, startFrame);
   this.plane.setParent(this);
   this.ai = new AI(this.plane, myGame.player.plane, /*respawn place*/x,y,dir);
   this.bulletTime=0;
@@ -20,7 +20,7 @@ Enemy.prototype.onKilled = function() {
 Enemy.prototype.scored = function() {
   this.score++;
   myGame.scoreboard.scored(ENEMY);
-  if (this.score >= 10) myGame.endGame(LOOSE);
+  if (this.score >= 7) myGame.endGame(LOOSE);
 };
 Enemy.prototype.respawnPlane = function() {
   this.plane.revive();
