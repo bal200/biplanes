@@ -29,11 +29,11 @@ var menuState = {
     this.clouds.menuClouds( 8, /*far*/2 );
 
     this.ribbon = game.add.sprite(game.width/2, game.height/2, 'ribbon');
-    this.ribbon.anchor.set(0.5, 0.5); this.ribbon.scale.set(0.85,0.85);
+    this.ribbon.anchor.set(0.5, 0.5); this.ribbon.scale.set(0.9,0.9);
 
     this.planeGroup = game.add.group();
     this.planeGroup.x=game.width/2; this.planeGroup.y=game.height/2;
-    this.plane = game.add.sprite(0,0, 'biplane');
+    this.plane = game.add.sprite(0,0, 'biplane'); this.plane.scale.set(0.85,0.85);
     this.plane.anchor.set(0.5, 0.5); 
     this.planeGroup.add(this.plane);
     this.prop = game.add.sprite(271,-4, 'prop');
