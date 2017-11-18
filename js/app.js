@@ -101,10 +101,6 @@ var playState = {
     this.count++;
     /* Fade in from Black at start of Game */
     if (this.count==1) game.camera.flash(0x000000, 600, true);
-    if (this.count==150) {
-      this.enemy.ai.startAI();
-      console.log("starting AI");
-    }
 
     if (this.gameMode==GAME) {
       if (this.cursors.up.isDown) {

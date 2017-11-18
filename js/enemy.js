@@ -20,7 +20,7 @@ Enemy.prototype.onKilled = function() {
 Enemy.prototype.scored = function() {
   this.score++;
   myGame.scoreboard.scored(ENEMY);
-  if (this.score >= 7) myGame.endGame(LOOSE);
+  if (this.score >= 8) myGame.endGame(LOOSE);
 };
 Enemy.prototype.respawnPlane = function() {
   this.plane.revive();
@@ -43,6 +43,7 @@ AI = function(plane, enemyPlane, /*respawn place*/x,y,dir) {
   this.targetDir=0;
   this.targetSpeed=0;
   myGame.updateSignal.add(this.update, this); /* we need to recalc each update, so subscribe */
+  this.started=false; /* Courtesy wait for player */
 }
 AI.prototype.update = function () {
   var plane = this.plane; if (!plane.alive) return;
@@ -85,10 +86,13 @@ AI.prototype.victoryLogicHandler = function() {
 AI.prototype.startAI = function () {
   this.targetSpeed = 300; /* prepare for take off! */
   this.targetDir = this.plane.angle;
+  this.started=true;
   this.logicHandler();
+  console.log("started AI");
 }
 AI.prototype.stopAI = function () {
   game.time.events.remove(this.logicTimer);
+  this.started=false;
 }
 /* This AI logic handler gets re-called every 2 secs to change the ufo direction */
 AI.prototype.logicHandler = function() {
@@ -96,7 +100,7 @@ AI.prototype.logicHandler = function() {
   var plane = this.plane;
   if (plane.flying) {
     /* check if were too low */
-    if (plane.y >540)  this.angleTo(45);
+    if (plane.y >540)  this.angleTo(48);
     else if (this.canISeePlayer()) {
 
       if (this.heightDifference() > 100) {/* if player is much higher, ensure we dont stall */

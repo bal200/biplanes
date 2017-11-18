@@ -3,6 +3,7 @@
 var START_GAME=1;
 var PRESSING_WRONG_BUTTONS=2;
 var AIRBOURNE=3;
+var ENEMY_SHOULD_START=4;
 var FINISHED=10;
 
 Learning = function() {
@@ -13,23 +14,29 @@ Learning.prototype.create = function() {
   myGame.updateSignal.add(this.update, this); /* subscribe to update callback */
 };  
 Learning.prototype.trigger = function( type ) {
+  if (type==ENEMY_SHOULD_START && this.stage==FINISHED) {
+    this.startEnemy();
+  }
   if (this.stage==FINISHED) return;
   if (type==START_GAME && this.stage==0) {
     this.stage=START_GAME;
     this.showInstructions();
+
   }else if (type==AIRBOURNE && this.stage==START_GAME) {
     this.stage=FINISHED;
     this.hideInstructions();
+    this.startEnemy();
   }
 };
 Learning.prototype.update = function(count) {
   
   if (count==50) this.trigger(START_GAME);
-
+  if (count==150) {
+    this.trigger(ENEMY_SHOULD_START);
+  }
   if (myGame.player.isAirbourne()) this.trigger( AIRBOURNE );
 
 };
-
 Learning.prototype.showInstructions = function() {
   if (!this.instructionsShowing){
     this.inst = game.add.sprite(720,300, 'instructions');
@@ -50,6 +57,9 @@ Learning.prototype.hideInstructions = function() {
     this.instructionsShowing=false;
   }
 }; 
+Learning.prototype.startEnemy = function() {
+  if (! myGame.enemy.ai.started) myGame.enemy.ai.startAI(); 
+}
 
 /***************************************************************************************/
 /* Manages the score text at the top. params: left player, right player, display group */

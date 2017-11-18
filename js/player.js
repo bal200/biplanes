@@ -18,7 +18,7 @@ Player.prototype.onKilled = function() {
 Player.prototype.scored = function() {
   this.score++;
   myGame.scoreboard.scored(PLAYER);
-  if (this.score >= 7) myGame.endGame(WIN);
+  if (this.score >= 8) myGame.endGame(WIN);
 };
 
 Player.prototype.respawnPlane = function() {
