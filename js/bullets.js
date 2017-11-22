@@ -12,7 +12,7 @@ var Bullets = function ( group ) {
     b.checkWorldBounds = true;
     b.body.allowGravity = false;
     b.anchor.set(0.5, 0.5);
-    b.frame=1;
+    b.frame=3;
     b.whos=0;
     b.events.onKilled.add(function(){
       if (this.tween && this.tween.stop) {
