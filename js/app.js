@@ -5,6 +5,7 @@
  */
 /* Blue plane: #2889e4, #1f7bd1, wing: #215fab
   Red Plane:   #db2937, #b41a28, wing: #930913 */
+/* Title: Take-off and dog fight the computer opponent in this remake of the side-on view classic Biplanes Duel */
 /*****************************************************************/
 var PLAYER=1, ENEMY=2;
 /******** GAME CALIBRATION VARIABLES ********/
@@ -45,6 +46,7 @@ var playState = {
     game.load.image("titlebacking", "img/titlebacking.png");
     game.load.spritesheet("buttons", "img/buttons103w47h.png", 103,47);
     game.load.image("instructions", "img/instructions.png");
+    game.load.audio("engine_noise", "img/engine_noise_loop.wav");
 
   },
   /**********  Create Function  ************************************************/
@@ -75,6 +77,9 @@ var playState = {
     this.planesGroup = game.add.group();
     this.player = new Player(1210, 676/*665*/, LEFT, /*sprite color*/0);
     this.enemy = new Enemy(50, 676, RIGHT, /*sprite color*/2);
+    
+    this.sound1 = new EngineNoise(this.player, /*volume*/1.0);  /* our engine noise handler */
+    this.sound2 = new EngineNoise(this.enemy, /*volume*/0.65);
 
     this.explosions = new Explosions(game.world);
 
@@ -131,15 +136,15 @@ var playState = {
   },
 
   render: function() {
-    //var speed = vectorToPower(this.player.plane.body.velocity);
-    //game.debug.text(game.time.fps+"fps "
-    //+ "Scrn "+game.scale.width.toFixed(0)+","+game.scale.height.toFixed(0)
+    var speed = vectorToPower(this.player.plane.body.velocity);
+    game.debug.text(game.time.fps+"fps "
+    + "Scrn "+game.scale.width.toFixed(0)+","+game.scale.height.toFixed(0)
     //+" cam "+game.camera.x+","+game.camera.y
     //+" plane "+this.player.plane.x.toFixed(0)+","+this.player.plane.y.toFixed(0)
-    //+" pitchSpeed "+this.player.plane.pitchSpeed.toFixed(0)
+    +" pitchSpeed "+this.player.plane.pitchSpeed.toFixed(0)
     //+" velocity "+speed.toFixed(0)
-    //+" speed "+this.player.plane.body.speed.toFixed(0)
-    //, 150, 14, "#00ff00");
+    +" speed "+this.player.plane.body.speed.toFixed(0)
+    , 150, 14, "#00ff00");
     //game.debug.body(this.player.plane);
     //game.debug.body(this.enemy.plane);
     //game.debug.body(this.tower);

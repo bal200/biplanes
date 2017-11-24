@@ -16,6 +16,7 @@ Plane = function(x,y, dir, startFrame) {
   myGame.updateSignal.add(this.update, this); /* we need to recalc each update, so subscribe */
   this.events.onKilled.add(this.onKilled ,this);
   this.bulletTime=0;
+  this.audio=false;
 };
 Plane.prototype = Object.create(Phaser.Sprite.prototype);
 Plane.prototype.constructor = Plane;
@@ -38,12 +39,16 @@ Plane.prototype.myReset = function (dir){
 
 /* amount of acceleration to add in pixels per sec, per sec */
 Plane.prototype.accelerate = function ( amount ){
-  this.engineSpeed += amount;
-  this.engineSpeed=Phaser.Math.clamp(this.engineSpeed, 0, MAX_ENGINE_SPEED);
+  if (this.alive) {
+    this.engineSpeed += amount;
+    this.engineSpeed=Phaser.Math.clamp(this.engineSpeed, 0, MAX_ENGINE_SPEED);
+    if (this.audio) this.audio.start();
+  }
 };
 Plane.prototype.decelerate = function ( amount ){ 
   this.engineSpeed -= amount;
   this.engineSpeed=Phaser.Math.clamp(this.engineSpeed, 0, MAX_ENGINE_SPEED);
+  if (this.audio && this.engineSpeed==0) this.audio.stop();
 };
 Plane.prototype.rotate = function ( rotation ){
   if (this.flying==false && this.body.speed < 40) return; /* if stopped on the ground then dont rotate */
@@ -72,11 +77,21 @@ Plane.prototype.recalcGroundVelocity = function() {
   var speed = this.engineSpeed;
   this.body.velocity = newVector(speed, ang);
 };
-
+/* Used by sound effects to determine sound pitch */
+Plane.prototype.engineNoiseSpeed = function() {
+  if (this.stalled) return 0;
+  return (this.pitchSpeed + this.engineSpeed);
+};
 Plane.prototype.calcPitch = function (ang){
   var yDelta = (newVector(PITCH_POWER/*200*/, ang)).y;
-  this.pitchSpeed += ((yDelta-this.pitchSpeed) * PITCH_LERP/*0.02*/);
+  var diff = yDelta - this.pitchSpeed;
+  if (this.pitchSpeed>50 && diff<0) { /* if were going fast, dont spoil our fun! */
+    this.pitchSpeed += (diff * (PITCH_LERP/4));
+  }else{  
+    this.pitchSpeed += (diff * PITCH_LERP/*0.02*/);
+  }
 };
+/* called by the collision detection, set the plane to 'on the ground' mode */
 Plane.prototype.land = function (){
   if (this.flying==true) {
     this.flying = false;
@@ -161,6 +176,7 @@ Plane.prototype.update = function (){
 
 Plane.prototype.onKilled = function () {
   myGame.explosions.explode(this.x, this.y, 1.0, 40);
+  if (this.audio) this.audio.stop();
   this.myParent.onKilled(); /* let the AI or controller know too */
 }
 

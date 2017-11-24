@@ -8,7 +8,9 @@ var FINISHED=10;
 
 Learning = function() {
   this.stage=0;
-  this.instructionsShowing=false;  
+  this.instructionsShowing=false;
+  var awardSpeed=false;
+  var awardUnstall=false; 
 }
 Learning.prototype.create = function() {
   myGame.updateSignal.add(this.update, this); /* subscribe to update callback */
@@ -36,6 +38,7 @@ Learning.prototype.update = function(count) {
   }
   if (myGame.player.isAirbourne()) this.trigger( AIRBOURNE );
 
+
 };
 Learning.prototype.showInstructions = function() {
   if (!this.instructionsShowing){
@@ -60,12 +63,58 @@ Learning.prototype.hideInstructions = function() {
 Learning.prototype.startEnemy = function() {
   if (! myGame.enemy.ai.started) myGame.enemy.ai.startAI(); 
 }
+/*****************************************************************************/
+
+
+
+/************************ Engine sound effect ****************************************/
+EngineNoise = function( player, volume ) {
+  this.player=player;
+  this.plane = player.plane;
+  this.volume=volume;
+  player.plane.audio = this; /* so audio object & plane object can talk to each other */
+
+  this.sample = game.add.audio("engine_noise");
+  //this.sample.allowMultiple = true;
+  //this.sample.addMarker('pitch10', 0.0, 0.30); /* standard */
+  //this.sample.addMarker('explosion2', 1.0, 2.0); /*  */
+  this.playing=false;
+  //this.sample.onLoop.add(this.onLoop, this);
+  
+}
+EngineNoise.prototype.start = function () {
+  if (!this.playing) {
+    this.playing=true;
+    this.sample.play(null,null, /*vol*/this.volume, /*loop*/true /*,force restart*/);
+    if (this.sample.usingWebAudio)
+      this.sample._sound.playbackRate.value = 0.4;
+    this.soundPitchRecalc();
+  }
+};
+EngineNoise.prototype.stop = function () {
+  this.playing=false;
+  this.sample.stop();
+  game.time.events.remove(this.logicTimer);
+};
+EngineNoise.prototype.soundPitchRecalc = function () {
+  /* 0 stop, 130 stall, 200 take off,300 fly level, 500 max; */
+  if (this.playing) {
+    var speed = this.plane.engineNoiseSpeed();
+    var rate=Phaser.Math.clamp((speed*0.003 ), 0.4, 1.5);
+    if (this.sample.usingWebAudio)
+      this.sample._sound.playbackRate.value = rate;
+
+  }
+  this.logicTimer=game.time.events.add(/*time*/50, function() {
+    this.soundPitchRecalc();
+  }, this);
+};
 
 /***************************************************************************************/
 /* Manages the score text at the top. params: left player, right player, display group */
 Scoreboard = function( left, right, group ) {
   this.left=left; this.right=right; 
-  var style = { font: "52px Courier New", fill: "#FFFFFF", 
+  var style = { font: "72px Courier New", fill: "#FFFFFF", 
     /*boundsAlignH: "left",*/ boundsAlignV: "top",
     /*fontWeight: "bold"*/
   };
