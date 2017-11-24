@@ -32,7 +32,7 @@ var menuState = {
     this.ribbon.anchor.set(0.5, 0.5); this.ribbon.scale.set(0.9,0.9);
 
     this.planeGroup = game.add.group();
-    this.planeGroup.x=game.width/2; this.planeGroup.y=game.height/2;
+    this.planeGroup.x=-300; this.planeGroup.y=game.height/2;
     this.plane = game.add.sprite(0,0, 'biplane'); this.plane.scale.set(0.85,0.85);
     this.plane.anchor.set(0.5, 0.5); 
     this.planeGroup.add(this.plane);
@@ -44,12 +44,10 @@ var menuState = {
 
     this.inTheClouds = new InTheClouds( game.world );
 
-    startButton=game.add.button(game.width/2, game.height*0.85, 'buttons', function(){
-      this.closeMenu(GAME);
+    this.startButton=game.add.button(game.width/2, game.height*0.85, 'buttons', function(){
+      this.divePlane();
     }, this,4,4,4 );
-    startButton.anchor.set(0.5,0.5);
-
-    //this.target={x:0, y:0};
+    this.startButton.anchor.set(0.5,0.5);
 
     this.wobble = [ new Wobble(20, 2000, 100),
             /*new Wobble(6, 600, 1000),*/
@@ -57,23 +55,50 @@ var menuState = {
 
     this.combineWobbles();
 
-    this.fullScreenButton=game.add.button(3,-8, 'buttons', this.fullScreenButtonPress, this,6,6,6);    
+    this.fullScreenButton=game.add.button(3,-8, 'buttons', this.fullScreenButtonPress, this,6,6,6);
   },
   update: function() {
     this.count++;
     /* Fade in from Black at start of Game */
     if (this.count==1) game.camera.flash(0x000000, 600, true);
-
+    
+    if (this.count==1) {
+      /* Bring the plane in Tween */
+      game.add.tween(this.planeGroup).to( { x: game.width/2}, /*duration*/5500,
+        Phaser.Easing.Cubic.Out , /*autostart*/true, /*delay*/500, /*repeat*/0, /*yoyo*/false)
+        .onComplete.add(function(sprite, tween){
+          /* */
+      }, this);
+      /* reveal the Ribbon and Play button */
+      game.add.tween(this.ribbon).from( { alpha:0.0 }, /*duration*/1000,
+        Phaser.Easing.Linear.None , /*autostart*/true, /*delay*/3000, /*repeat*/0, /*yoyo*/false);
+      game.add.tween(this.startButton).from( { alpha:0.0 }, /*duration*/1000,
+        Phaser.Easing.Linear.None , /*autostart*/true, /*delay*/3000, /*repeat*/0, /*yoyo*/false);
+    }
     this.combineWobbles();
-
     if (game.rnd.between(0,200)==1) {
       this.inTheClouds.createClouds( game.rnd.between(2,4) );
     }
-
     this.clouds.update();
 
-
   },
+  divePlane: function() {
+    /* Take the plane downwards */
+    game.add.tween(this.planeGroup).to( { y: game.height+200, x:this.planeGroup.x-100 }, 
+      /*duration*/2500,Phaser.Easing.Cubic.In, /*autostart*/true, /*delay*/0, /*repeat*/0, /*yoyo*/false)
+      .onComplete.add(function(sprite, tween){
+        this.closeMenu(GAME); /* start the game */
+    }, this);
+    game.add.tween(this.planeGroup).to( { angle:15 }, /*duration*/2100,
+      Phaser.Easing.Cubic.InOut , /*autostart*/true, /*delay*/0, /*repeat*/0, /*yoyo*/false);
+
+    /* Remove Ribbon and Play button */
+    game.add.tween(this.ribbon).to( { alpha:0.0 }, /*duration*/400,
+      Phaser.Easing.Linear.None , /*autostart*/true, /*delay*/0, /*repeat*/0, /*yoyo*/false);
+    game.add.tween(this.startButton).to( { alpha:0.0 }, /*duration*/400,
+      Phaser.Easing.Linear.None , /*autostart*/true, /*delay*/0, /*repeat*/0, /*yoyo*/false);
+
+},
   combineWobbles: function() {
     this.plane.x=0; this.plane.y=0;
     for (var n=0; n<this.wobble.length; n++) {
@@ -96,6 +121,7 @@ var menuState = {
   shutdown: function() {
     /* delete all the things! */
     this.count=0;
+    this.wobble=null;
   },
   onSizeChange: function() {
     if (this.touchControl) {

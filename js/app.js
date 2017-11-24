@@ -47,6 +47,7 @@ var playState = {
     game.load.spritesheet("buttons", "img/buttons103w47h.png", 103,47);
     game.load.image("instructions", "img/instructions.png");
     game.load.audio("engine_noise", "img/engine_noise_loop.wav");
+    game.load.image("circle_flash", "img/circle_flash.png");
 
   },
   /**********  Create Function  ************************************************/
@@ -105,7 +106,7 @@ var playState = {
   update: function() {
     this.count++;
     /* Fade in from Black at start of Game */
-    if (this.count==1) game.camera.flash(0x000000, 600, true);
+    if (this.count==1) game.camera.flash(0x000000, 800, true);
 
     if (this.gameMode==GAME) {
       if (this.cursors.up.isDown) {
@@ -136,15 +137,15 @@ var playState = {
   },
 
   render: function() {
-    var speed = vectorToPower(this.player.plane.body.velocity);
-    game.debug.text(game.time.fps+"fps "
-    + "Scrn "+game.scale.width.toFixed(0)+","+game.scale.height.toFixed(0)
+    //var speed = vectorToPower(this.player.plane.body.velocity);
+    //game.debug.text(game.time.fps+"fps "
+    //+ "Scrn "+game.scale.width.toFixed(0)+","+game.scale.height.toFixed(0)
     //+" cam "+game.camera.x+","+game.camera.y
     //+" plane "+this.player.plane.x.toFixed(0)+","+this.player.plane.y.toFixed(0)
-    +" pitchSpeed "+this.player.plane.pitchSpeed.toFixed(0)
+    //+" pitchSpeed "+this.player.plane.pitchSpeed.toFixed(0)
     //+" velocity "+speed.toFixed(0)
-    +" speed "+this.player.plane.body.speed.toFixed(0)
-    , 150, 14, "#00ff00");
+    //+" speed "+this.player.plane.body.speed.toFixed(0)
+    //, 150, 14, "#00ff00");
     //game.debug.body(this.player.plane);
     //game.debug.body(this.enemy.plane);
     //game.debug.body(this.tower);

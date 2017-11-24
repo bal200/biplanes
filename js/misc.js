@@ -64,7 +64,71 @@ Learning.prototype.startEnemy = function() {
   if (! myGame.enemy.ai.started) myGame.enemy.ai.startAI(); 
 }
 /*****************************************************************************/
+//Flash(this.x, this.y);
 
+function Flash(x,y) {
+  var fl = game.add.sprite(x,y, 'circle_flash');
+
+  fl.scale.set(0.1, 0.1);
+  fl.alpha = 1.0;
+  fl.anchor.set(0.5, 0.5);
+  game.add.tween(fl).to( { alpha:0 }, /*duration*/100,
+    Phaser.Easing.Linear.None , /*autostart*/true, /*delay*/200, /*repeat*/0, /*yoyo*/false)
+    .onComplete.add(function(sprite, tween){
+      sprite.kill();
+      sprite.destroy();
+  }, this);
+
+  game.add.tween(fl.scale).to( { x:2.0, y:2.0 }, /*duration*/300,
+    Phaser.Easing.Linear.None , /*autostart*/true, /*delay*/0, /*repeat*/0, /*yoyo*/false);
+}
+
+
+var Flashy = function ( group ) {
+  Phaser.Group.call(this, game); /* create a Group, the parent Class */
+
+  this.enableBody = true;
+  this.physicsBodyType = Phaser.Physics.ARCADE;
+  group.add( this );
+
+  for (var i = 0; i < 15; i++) {
+    var b = this.create(0, 0, 'bullets');
+    b.exists = false;  b.visible = false;
+    b.checkWorldBounds = true;
+    b.body.allowGravity = false;
+    b.anchor.set(0.5, 0.5);
+    b.frame=3;
+    b.whos=0;
+    b.events.onKilled.add(function(){
+      if (this.tween && this.tween.stop) {
+        this.tween.stop();
+      }
+    } ,b);
+    //b.events.onOutOfBounds.add( bulletOnKilled );
+  }
+};
+Flashy.prototype = Object.create(Phaser.Group.prototype);
+Flashy.prototype.constructor = Flashy;
+
+Flashy.prototype.shoot = function( x,y, direction, who ) {
+  var bullet = this.getFirstExists(false);
+  if (bullet) {
+    var vec = angleToVector( direction );
+    bullet.reset(x + (vec.x*40), y + (vec.y*40));
+    var power = BULLET_SPEED;
+    bullet.whos = who;
+    bullet.alpha = 1.0;
+    bullet.body.velocity.x = vec.x * power;
+    bullet.body.velocity.y = vec.y * power;
+    bullet.angle = direction;
+    bullet.frame = 1;
+    bullet.tween=game.add.tween(bullet).to( { alpha:0 }, /*duration*/200,
+      Phaser.Easing.Linear.None , /*autostart*/true, /*delay*/1000, /*repeat*/0, /*yoyo*/false)
+      .onComplete.add(function(bullet, tween){
+         bullet.kill();
+      }, this);
+  }
+}
 
 
 /************************ Engine sound effect ****************************************/
